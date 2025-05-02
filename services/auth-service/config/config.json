@@ -1,0 +1,10 @@
+{
+  "development": {
+    "username": "sportsbook_user",
+    "password": "password123",
+    "database": "sportsbook_db",
+    "host": "db",
+    "dialect": "postgres",
+    "migrationStoragePath": "migrations"
+  }
+}

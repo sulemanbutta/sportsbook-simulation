@@ -1,0 +1,80 @@
+services:
+  db:
+    env_file:
+      - .env
+    image: postgres:16
+    container_name: sportsbook-db
+    restart: no # restart: always db in case of error
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - sportsbook-postgres:/var/lib/postgresql/data
+  
+  auth-service:
+    container_name: auth-service
+    restart: no
+    build: ./services/auth-service
+    environment: 
+      - PORT=${AUTH_PORT}
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PORT=${DB_PORT}
+    ports:
+      - "${AUTH_PORT}:${AUTH_PORT}"
+    env_file:
+      - ./services/auth-service/.env
+    depends_on:
+      - db
+  
+  betting-service:
+    container_name: betting-service
+    restart: no
+    build: ./services/betting-service
+    environment:
+      - PORT=${BETTING_PORT}
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PORT=${DB_PORT}
+    ports:
+      - "${BETTING_PORT}:${BETTING_PORT}"
+    env_file:
+      - ./services/betting-service/.env
+    depends_on:
+      - db
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+
+
+  settlement-service:
+    container_name: settlement-service
+    restart: no
+    build: ./services/settlement-service
+    environment:
+      - PORT=${SETTLEMENT_PORT}
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PORT=${DB_PORT}
+    ports:
+      - "${SETTLEMENT_PORT}:${SETTLEMENT_PORT}"
+    env_file:
+      - ./services/settlement-service/.env
+    depends_on:
+      - db
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+
+
+volumes:
+  sportsbook-postgres:
