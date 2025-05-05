@@ -38,3 +38,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_TOKEN }}
           channelId: live
           projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
+          entryPoint: frontend/fe-sportsbook-simulation
