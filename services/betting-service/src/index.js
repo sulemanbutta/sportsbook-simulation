@@ -2,7 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const bettingRoutes = require("./routes/bettingRoutes");
-const sequelize = require('./db');
+const sequelize = require('./services/db');
+
 const app = express();
 
 // Middleware
