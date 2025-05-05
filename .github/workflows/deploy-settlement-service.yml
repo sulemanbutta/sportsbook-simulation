@@ -43,6 +43,7 @@ jobs:
             --platform=managed \
             --region=${{ secrets.GCP_REGION }} \
             --allow-unauthenticated \
+            --add-cloudsql-instances=sportsbook-simulation:us-central1:sportsbook-instance
             --set-env-vars="\
             SETTLEMENT_PORT=${{ secrets.SETTLEMENT_PORT }},\
             JWT_SECRET=${{ secrets.JWT_SECRET }},\
