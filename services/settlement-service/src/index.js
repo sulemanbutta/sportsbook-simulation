@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const settlementRoutes = require("./routes/settlementRoutes");
+const sequelize = require('./db');
 const startPoller = require('./poller');
 
 const app = express();
