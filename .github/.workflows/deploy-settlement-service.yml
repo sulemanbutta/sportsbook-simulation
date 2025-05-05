@@ -1,0 +1,51 @@
+name: Deploy Settlement Service to Cloud Run
+
+on:
+  push:
+    paths:
+      - 'services/settlement-service/**'
+      - '.github/workflows/deploy-settlement-service.yml'
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Build and Deploy Settlement Service
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/sportsbook-repo/settlement-service ./services/settlement-service
+          docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/sportsbook-repo/settlement-service
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy settlement-service \
+            --image=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/sportsbook-repo/settlement-service \
+            --platform=managed \
+            --region=${{ secrets.GCP_REGION }} \
+            --allow-unauthenticated \
+            --set-env-vars=\
+            SETTLEMENT_PORT=${{ secrets.SETTLEMENT_PORT }},\
+            JWT_SECRET=${{ secrets.JWT_SECRET }},\
+            DB_HOST=${{ secrets.DB_HOST }},\
+            DB_NAME=${{ secrets.DB_NAME }},\
+            DB_USER=${{ secrets.DB_USER }},\
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }},\
+            DB_PORT=${{ secrets.DB_PORT }},\
+            ODDS_API_KEY=${{ secrets.ODDS_API_KEY }},\

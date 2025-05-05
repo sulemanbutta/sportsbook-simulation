@@ -9,6 +9,8 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+app.locals.sequelize = sequelize;
+
 // Routes
 app.use("/betting", bettingRoutes);
 
