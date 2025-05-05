@@ -43,7 +43,7 @@ jobs:
             --platform=managed \
             --region=${{ secrets.GCP_REGION }} \
             --allow-unauthenticated \
-            --set-env-vars=\
+            --set-env-vars="\
             BETTING_PORT=${{ secrets.BETTING_PORT }},\
             JWT_SECRET=${{ secrets.JWT_SECRET }},\
             DB_HOST=${{ secrets.DB_HOST }},\
@@ -57,4 +57,4 @@ jobs:
             ODDS_API_MLB_ODDS_URL=${{ secrets.ODDS_API_MLB_ODDS_URL }},\
             ESPN_API_NBA_SCOREBOARD=${{ secrets.ESPN_API_NBA_SCOREBOARD }},\
             ESPN_API_NHL_SCOREBOARD=${{ secrets.ESPN_API_NHL_SCOREBOARD }},\
-            ESPN_API_MLB_SCOREBOARD=${{ secrets.ESPN_API_MLB_SCOREBOARD }},\
+            ESPN_API_MLB_SCOREBOARD=${{ secrets.ESPN_API_MLB_SCOREBOARD }}"

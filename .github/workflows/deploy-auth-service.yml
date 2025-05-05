@@ -44,11 +44,11 @@ jobs:
             --platform=managed \
             --region=${{ secrets.GCP_REGION }} \
             --allow-unauthenticated \
-            --set-env-vars=\
+            --set-env-vars="\
             AUTH_PORT=${{ secrets.AUTH_PORT }},\
             JWT_SECRET=${{ secrets.JWT_SECRET }},\
             DB_HOST=${{ secrets.DB_HOST }},\
             DB_NAME=${{ secrets.DB_NAME }},\
             DB_USER=${{ secrets.DB_USER }},\
             DB_PASSWORD=${{ secrets.DB_PASSWORD }},\
-            DB_PORT=${{ secrets.DB_PORT }},\
+            DB_PORT=${{ secrets.DB_PORT }}"
