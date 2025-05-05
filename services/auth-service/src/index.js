@@ -14,7 +14,7 @@ app.locals.sequelize = sequelize;
 // Routes
 app.use("/auth", authRoutes);
 
-const PORT = process.env.AUTH_PORT || 4000;
+const PORT = process.env.PORT || process.env.AUTH_PORT || 4000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Auth Service running on port ${PORT}`);
 });
