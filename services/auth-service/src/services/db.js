@@ -4,6 +4,7 @@ const { Sequelize } = require("sequelize");
 // Decide host: GCP - socket path; Local - hostname
 const host = process.env.DB_HOST;      // e.g. '/cloudsql/...' or 'db'
 const port = process.env.DB_PORT || 5432;
+const isSocket = host.startsWith("/cloudsql/");
 
 console.log("▶️ [db.js] Connecting with host:", host, "port:", port);
 
@@ -15,7 +16,12 @@ const sequelize = new Sequelize(
     dialect: "postgres",
     host,     // IMPORTANT: set host to the socket path on Cloud Run
     port,     // can be 5432
-    dialectOptions: {}  // no socketPath here
+    dialectOptions: {
+      // Only set socketPath when using the Unix socket
+      ...(isSocket ? { socketPath: host } : {}),
+      // Disable SSL/TLS verification over the socket
+      ssl: false
+    }
   }
 );
 /*
