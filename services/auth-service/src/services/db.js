@@ -4,6 +4,7 @@ const { Sequelize } = require("sequelize");
 // Decide host: GCP - socket path; Local - hostname
 const rawHost = process.env.DB_HOST;      // e.g. '/cloudsql/...' or 'db'
 const port = process.env.DB_PORT || 5432;
+const isSocket = process.env.DB_HOST?.startsWith("/cloudsql/");
 console.log("▶️ [db.js] rawHost:", rawHost);
 
 const dialectOptions = isSocket
