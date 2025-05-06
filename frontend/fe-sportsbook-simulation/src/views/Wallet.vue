@@ -9,7 +9,9 @@ const loading = ref(false)
 const fetchBalance = async () => {
   try {
     loading.value = true
-    const res = await axios.get('http://localhost:4000/auth/balance', {
+    //const res = await axios.get('http://localhost:4000/auth/balance', { `${AUTH_API}/auth/change-password`,
+    const AUTH_API = import.meta.env.VITE_AUTH_API_URL;
+    const res = await axios.get(`${AUTH_API}/auth/balance`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     })
     balance.value = res.data.balance
@@ -23,8 +25,10 @@ const fetchBalance = async () => {
 const updateBalance = async () => {
   try {
     loading.value = true
+    const AUTH_API = import.meta.env.VITE_AUTH_API_URL;
     const res = await axios.post(
-      'http://localhost:4000/auth/deposit',
+      //'http://localhost:4000/auth/deposit',
+      `${AUTH_API}/auth/deposit`,
       { amount: parseFloat(amount.value.toFixed(2)) },
       { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } },
     )

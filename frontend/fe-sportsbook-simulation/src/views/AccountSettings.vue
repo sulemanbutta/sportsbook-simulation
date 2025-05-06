@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 import axios from 'axios'
 
+
 const auth = useAuthStore()
 const currentPassword = ref('')
 const newPassword = ref('')
@@ -36,8 +37,10 @@ const updatePassword = async () => {
   }
 
   try {
+    const AUTH_API = import.meta.env.VITE_AUTH_API_URL;
     const res = await axios.post(
-      'http://localhost:4000/auth/change-password',
+      //'http://localhost:4000/auth/change-password',
+      `${AUTH_API}/auth/change-password`,
       {
         currentPassword: currentPassword.value,
         newPassword: newPassword.value,

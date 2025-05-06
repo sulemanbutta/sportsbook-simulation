@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
+export const AUTH_API = import.meta.env.VITE_AUTH_API_URL;
 
 export const useBetslipStore = defineStore('betslip', {
   state: () => ({
@@ -54,7 +55,9 @@ export const useBetslipStore = defineStore('betslip', {
         bets: this.bets,
       }
       try {
-        const endpoint = 'http://localhost:4001/betting/bet'
+        //const endpoint = 'http://localhost:4001/betting/bet'
+        const BETTING_API = import.meta.env.VITE_BETTING_API_URL;
+        const endpoint = `${BETTING_API}/betting/bet`
         const response = await axios.post(endpoint, payload, config)
 
         // Optional: handle response

@@ -1,6 +1,4 @@
 import { defineStore } from 'pinia'
-import { jwtDecode } from 'jwt-decode'
-import apiClient from '@/api/apiClient'
 import axios from 'axios'
 
 export const useAuthStore = defineStore('auth', {
@@ -22,14 +20,18 @@ export const useAuthStore = defineStore('auth', {
     },
     async login({ email, password }) {
       console.log(email, password)
-      const res = await axios.post('http://localhost:4000/auth/login', { email, password })
+      // const res = await axios.post('http://localhost:4000/auth/login', { email, password })
+      const AUTH_API = import.meta.env.VITE_AUTH_API_URL;
+      const res =  await axios.post(`${AUTH_API}/auth/login`, { email, password });
       console.log('res:', res)
       this.token = res.data.token
       localStorage.setItem('token', this.token)
       await this.fetchUser()
     },
     async signup({ username, email, password }) {
-      const res = await axios.post('http://localhost:4000/auth/register', {
+      //const res = await axios.post('http://localhost:4000/auth/register', {
+      const AUTH_API = import.meta.env.VITE_AUTH_API_URL;
+      const res = await axios.post(`${AUTH_API}/auth/register`, {
         username,
         email,
         password,
@@ -41,7 +43,9 @@ export const useAuthStore = defineStore('auth', {
     async fetchUser() {
       if (!this.token) return
       try {
-        const res = await axios.get('http://localhost:4000/auth/account', {
+        //const res = await axios.get('http://localhost:4000/auth/account', {
+        const AUTH_API = import.meta.env.VITE_AUTH_API_URL;
+        const res = await axios.get(`${AUTH_API}/auth/account`, {
           headers: {
             Authorization: `Bearer ${this.token}`,
           },
