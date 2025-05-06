@@ -5,12 +5,16 @@ const bettingRoutes = require("./routes/bettingRoutes");
 const sequelize = require('./services/db');
 
 const app = express();
-const allowed = [ 'https://sportsbook-simulation.web.app/', 'https://sportsbook-simulation.firebaseapp.com/' ];
+const allowed = [ 'https://sportsbook-simulation.web.app', 'https://sportsbook-simulation.firebaseapp.com' ];
 
 // Middleware
 app.use(express.json());
 //app.use(cors());
-app.use(cors({ origin: allowed }));
+app.use(cors({
+  origin: allowed,
+  methods: ['GET','POST','PUT','DELETE'],
+  allowedHeaders: ['Content-Type','Authorization']
+}));
 
 app.locals.sequelize = sequelize;
 
