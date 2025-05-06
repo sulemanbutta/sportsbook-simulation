@@ -2,7 +2,7 @@ require("dotenv").config();
 const { Sequelize } = require("sequelize");
 
 // Decide host: GCP - socket path; Local - hostname
-const host = process.env.DB_HOST;      // e.g. '/cloudsql/...' or 'db'
+const rawHost = process.env.DB_HOST;      // e.g. '/cloudsql/...' or 'db'
 const port = process.env.DB_PORT || 5432;
 console.log("▶️ [db.js] rawHost:", rawHost);
 
