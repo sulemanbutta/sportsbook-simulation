@@ -6,15 +6,29 @@ const rawHost = process.env.DB_HOST;      // e.g. '/cloudsql/...' or 'db'
 const port = process.env.DB_PORT || 5432;
 console.log("▶️ [db.js] rawHost:", rawHost);
 
+const dialectOptions = isSocket
+? {
+      // Mount the Unix socket path
+      socketPath: rawHost,
+      // Use SSL, but do *not* validate the certificate CN
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    }
+  : {};
+
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
   process.env.DB_PASSWORD,
   {
     dialect: "postgres",
-    host: rawHost,    // if this string starts with "/", pg uses it as a socket dir
-    port,             // used for TCP; ignored when host is a socket path
-    dialectOptions: {}// no extra socketPath or ssl settings needed here
+    // For socket mode, pg will ignore host/port and use socketPath;
+    // for TCP (local dev), it will use host & port below.
+    host: isSocket ? undefined : rawHost,
+    port: isSocket ? undefined : port || 5432,
+    dialectOptions
   }
 );
 
