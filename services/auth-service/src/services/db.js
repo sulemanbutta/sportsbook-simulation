@@ -19,10 +19,6 @@ if (isCloudSQL) {
     host: "/cloudsql/" + process.env.CLOUDSQL_INSTANCE,
     dialectOptions: {
       socketPath: "/cloudsql/" + process.env.CLOUDSQL_INSTANCE,
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
-      }
     }
   };
   console.log("▶️ [db.js] Using Cloud SQL socket connection:", `/cloudsql/${process.env.CLOUDSQL_INSTANCE}`);
