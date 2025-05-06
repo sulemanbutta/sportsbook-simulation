@@ -1,65 +1,44 @@
 require("dotenv").config();
 const { Sequelize } = require("sequelize");
 
-// Decide host: GCP - socket path; Local - hostname
-const rawHost = process.env.DB_HOST;      // e.g. '/cloudsql/...' or 'db'
-const port = process.env.DB_PORT || 5432;
-const isSocket = process.env.DB_HOST?.startsWith("/cloudsql/");
-console.log("▶️ [db.js] rawHost:", rawHost);
+// Determine if running in Cloud Run with Cloud SQL
+const isCloudSQL = process.env.DB_HOST?.includes("/cloudsql/");
+console.log("▶️ [db.js] DB_HOST:", process.env.DB_HOST);
+console.log("▶️ [db.js] isCloudSQL:", isCloudSQL);
 
-const dialectOptions = isSocket
-? {
-      // Mount the Unix socket path
-      socketPath: rawHost,
-      // Use SSL, but do *not* validate the certificate CN
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
-      }
+// Configure connection options
+let config = {
+  dialect: "postgres",
+  logging: false
+};
+
+if (isCloudSQL) {
+  // Cloud SQL with Unix socket
+  config = {
+    ...config,
+    host: "/cloudsql/" + process.env.CLOUDSQL_INSTANCE,
+    dialectOptions: {
+      socketPath: "/cloudsql/" + process.env.CLOUDSQL_INSTANCE
     }
-  : {};
+  };
+  console.log("▶️ [db.js] Using Cloud SQL socket connection");
+} else {
+  // Standard TCP connection for local development
+  config = {
+    ...config,
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT || 5432
+  };
+  console.log("▶️ [db.js] Using standard TCP connection");
+}
 
+// Create Sequelize instance
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
   process.env.DB_PASSWORD,
-  {
-    dialect: "postgres",
-    // For socket mode, pg will ignore host/port and use socketPath;
-    // for TCP (local dev), it will use host & port below.
-    host: isSocket ? undefined : rawHost,
-    port: isSocket ? undefined : port || 5432,
-    dialectOptions
-  }
+  config
 );
-
-/*
-// Detect whether you're running in GCP (socket path) or locally (hostname)
-const isSocket = process.env.DB_HOST?.startsWith("/cloudsql/");
-console.log("▶️ [db.js] Sequelize init - DB_HOST:", process.env.DB_HOST);
-console.log("▶️ [db.js] Sequelize init - isSocket:", isSocket);
-
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
-  {
-    dialect: "postgres",
-    // If socket mode, leave host/port undefined (driver will use socketPath)
-    host: isSocket ? undefined : process.env.DB_HOST,
-    port: isSocket ? undefined : process.env.DB_PORT,
-    dialectOptions: isSocket
-      ? { socketPath: process.env.DB_HOST }
-      : {}
-  }
-);
-
-console.log("▶️ [db.js] Sequelize options:", {
-  host: isSocket ? undefined : process.env.DB_HOST,
-  port: isSocket ? undefined : process.env.DB_PORT,
-  socketPath: isSocket ? process.env.DB_HOST : null
-});
-*/
 sequelize
   .authenticate()
   .then(() => {
