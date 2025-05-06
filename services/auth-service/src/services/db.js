@@ -16,12 +16,7 @@ const sequelize = new Sequelize(
     dialect: "postgres",
     host,     // IMPORTANT: set host to the socket path on Cloud Run
     port,     // can be 5432
-    dialectOptions: {
-      // Only set socketPath when using the Unix socket
-      ...(isSocket ? { socketPath: host } : {}),
-      // Disable SSL/TLS verification over the socket
-      ssl: false
-    }
+    dialectOptions:  isSocket ? { socketPath: host, ssl: { rejectUnauthorized: false }} : {}
   }
 );
 /*
