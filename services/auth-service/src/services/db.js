@@ -1,10 +1,26 @@
 require("dotenv").config();
 const { Sequelize } = require("sequelize");
 
+// Decide host: GCP - socket path; Local - hostname
+const host = process.env.DB_HOST;      // e.g. '/cloudsql/...' or 'db'
+const port = process.env.DB_PORT || 5432;
+
+console.log("▶️ [db.js] Connecting with host:", host, "port:", port);
+
+const sequelize = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASSWORD,
+  {
+    dialect: "postgres",
+    host,     // IMPORTANT: set host to the socket path on Cloud Run
+    port,     // can be 5432
+    dialectOptions: {}  // no socketPath here
+  }
+);
+/*
 // Detect whether you're running in GCP (socket path) or locally (hostname)
 const isSocket = process.env.DB_HOST?.startsWith("/cloudsql/");
-
-
 console.log("▶️ [db.js] Sequelize init - DB_HOST:", process.env.DB_HOST);
 console.log("▶️ [db.js] Sequelize init - isSocket:", isSocket);
 
@@ -28,7 +44,7 @@ console.log("▶️ [db.js] Sequelize options:", {
   port: isSocket ? undefined : process.env.DB_PORT,
   socketPath: isSocket ? process.env.DB_HOST : null
 });
-
+*/
 sequelize
   .authenticate()
   .then(() => {
