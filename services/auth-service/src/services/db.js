@@ -9,7 +9,7 @@ console.log("▶️ [db.js] isCloudSQL:", isCloudSQL);
 // Configure connection options
 let config = {
   dialect: "postgres",
-  logging: false
+  logging: console.log
 };
 
 if (isCloudSQL) {
@@ -21,7 +21,7 @@ if (isCloudSQL) {
       socketPath: "/cloudsql/" + process.env.CLOUDSQL_INSTANCE
     }
   };
-  console.log("▶️ [db.js] Using Cloud SQL socket connection");
+  console.log("▶️ [db.js] Using Cloud SQL socket connection:", `/cloudsql/${process.env.CLOUDSQL_INSTANCE}`);
 } else {
   // Standard TCP connection for local development
   config = {
