@@ -20,7 +20,13 @@ const sequelize = new Sequelize(
 );
 
 sequelize
-  .authenticate()
+  .authenticate(() => {
+    console.log("▶️ Sequelize options:", {
+      host: isSocket ? undefined : process.env.DB_HOST,
+      port: isSocket ? undefined : process.env.DB_PORT,
+      socketPath: isSocket ? process.env.DB_HOST : null
+    });    
+  })
   .then(() => {
     console.log("Database connection successful")
   })

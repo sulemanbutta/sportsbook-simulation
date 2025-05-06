@@ -16,6 +16,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type','Authorization']
 }));
 
+
+console.log("▶️ DB_HOST =", process.env.DB_HOST);
+console.log("▶️ isSocket =", process.env.DB_HOST?.startsWith("/cloudsql/"));
 app.locals.sequelize = sequelize;
 
 // Routes
