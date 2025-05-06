@@ -14,11 +14,25 @@ const sequelize = new Sequelize(
   process.env.DB_PASSWORD,
   {
     dialect: "postgres",
-    host,     // IMPORTANT: set host to the socket path on Cloud Run
-    port,     // can be 5432
-    dialectOptions:  isSocket ? { socketPath: host, ssl: { rejectUnauthorized: false }} : {}
+    // Do NOT set host/port when using socket. Let pg use socketPath only.
+    ...(isSocket
+      ? {
+          dialectOptions: {
+            socketPath: host,
+            // Fully disable SSL/TLS
+            ssl: {
+              require: false,
+              rejectUnauthorized: false
+            }
+          }
+        }
+      : {
+          host,
+          port: process.env.DB_PORT || 5432
+        }),
   }
 );
+
 /*
 // Detect whether you're running in GCP (socket path) or locally (hostname)
 const isSocket = process.env.DB_HOST?.startsWith("/cloudsql/");
