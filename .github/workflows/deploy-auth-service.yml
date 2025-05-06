@@ -37,6 +37,11 @@ jobs:
           docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/sportsbook-repo/auth-service ./services/auth-service
           docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/sportsbook-repo/auth-service
 
+      - name: Debug secrets
+        run: |
+          echo "Instance: ${{ secrets.CLOUDSQL_INSTANCE }}"
+          echo "DB_HOST:   ${{ secrets.DB_HOST }}"
+
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy auth-service \
@@ -45,4 +50,4 @@ jobs:
             --region=${{ secrets.GCP_REGION }} \
             --allow-unauthenticated \
             --add-cloudsql-instances=${{ secrets.CLOUDSQL_INSTANCE }} \
-            --set-env-vars="AUTH_PORT=${{ secrets.AUTH_PORT }},JWT_SECRET=${{ secrets.JWT_SECRET }},DB_HOST=${{ secrets.DB_HOST }},DB_NAME=${{ secrets.DB_NAME }},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},DB_PORT=${{ secrets.DB_PORT }}"
+            --set-env-vars=AUTH_PORT=${{ secrets.AUTH_PORT }},JWT_SECRET=${{ secrets.JWT_SECRET }},DB_HOST=${{ secrets.DB_HOST }},DB_NAME=${{ secrets.DB_NAME }},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},DB_PORT=${{ secrets.DB_PORT }}
