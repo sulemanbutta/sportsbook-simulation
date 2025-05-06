@@ -43,7 +43,7 @@ jobs:
             --platform=managed \
             --region=${{ secrets.GCP_REGION }} \
             --allow-unauthenticated \
-            --add-cloudsql-instances=${{ secrets.DB_HOST }} \
+            --add-cloudsql-instances=${{ secrets.CLOUDSQL_INSTANCE }} \
             --set-env-vars="\
             SETTLEMENT_PORT=${{ secrets.SETTLEMENT_PORT }},\
             JWT_SECRET=${{ secrets.JWT_SECRET }},\
