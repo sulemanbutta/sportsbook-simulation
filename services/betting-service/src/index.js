@@ -21,7 +21,7 @@ app.locals.sequelize = sequelize;
 // Routes
 app.use("/betting", bettingRoutes);
 
-const PORT = process.env.PORT || process.env.BETTING_PORT || 4001;
+const PORT = parseInt(process.env.PORT) || 4001;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Betting Service running on port ${PORT}`);
 });

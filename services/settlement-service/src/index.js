@@ -23,7 +23,7 @@ app.locals.sequelize = sequelize;
 // Routes
 app.use("/settlement", settlementRoutes);
 
-const PORT = process.env.PORT || process.env.SETTLEMENT_PORT || 4002;
+const PORT = parseInt(process.env.PORT, 10) || 4002;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Settlement Service running on port ${PORT}`);
 });
