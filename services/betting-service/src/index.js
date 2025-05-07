@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const bettingRoutes = require("./routes/bettingRoutes");
-const sequelize = require('./services/db');
+const sequelize = require("./services/db");
 
 const app = express();
 const allowed = [ 'https://sportsbook-simulation.web.app', 'https://sportsbook-simulation.firebaseapp.com' ];

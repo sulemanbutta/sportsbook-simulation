@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
-const sequelize = require('./services/db');
+const sequelize = require("./services/db");
 
 const app = express();
 const allowed = [ 'https://sportsbook-simulation.web.app', 'https://sportsbook-simulation.firebaseapp.com' ];
@@ -16,9 +16,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type','Authorization']
 }));
 
-
-console.log("▶️ DB_HOST =", process.env.DB_HOST);
-console.log("▶️ isSocket =", process.env.DB_HOST?.startsWith("/cloudsql/"));
 app.locals.sequelize = sequelize;
 
 // Routes
