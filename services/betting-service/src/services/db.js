@@ -6,6 +6,11 @@ const port    = process.env.DB_PORT || 5432;
 
 console.log("▶️ [db.js] Connecting via public IP:", rawHost, port);
 
+console.log("▶️ [db.js] process.env.DB_HOST =", process.env.DB_HOST);
+console.log("▶️ [db.js] typeof DB_HOST =", typeof process.env.DB_HOST);
+
+
+
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
