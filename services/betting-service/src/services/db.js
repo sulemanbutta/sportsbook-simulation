@@ -19,6 +19,17 @@ const sequelize = new Sequelize(
   }
 );*/
 
+const fs = require("fs");
+const socketDir = process.env.DB_HOST; // "/cloudsql/…"
+console.log("▶️ Checking socket:", socketDir);
+try {
+  const files = fs.readdirSync(socketDir);
+  console.log("▶️ Socket dir contents:", files);
+} catch (e) {
+  console.error("❌ Could not read socket dir:", e.message);
+}
+
+
 // Determine if running in Cloud Run with Cloud SQL
 const isCloudSQL = process.env.DB_HOST?.includes("/cloudsql/");
 console.log("▶️ [db.js] DB_HOST:", process.env.DB_HOST);
