@@ -44,4 +44,4 @@ jobs:
             --region=${{ secrets.GCP_REGION }} \
             --allow-unauthenticated \
             --add-cloudsql-instances=${{ secrets.CLOUDSQL_INSTANCE }} \
-            --set-env-vars="SETTLEMENT_PORT=${{ secrets.SETTLEMENT_PORT }},JWT_SECRET=${{ secrets.JWT_SECRET }},DB_HOST=${{ secrets.DB_HOST }},DB_NAME=${{ secrets.DB_NAME }},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},DB_PORT=${{ secrets.DB_PORT }},ODDS_API_KEY=${{ secrets.ODDS_API_KEY }}"
+            --set-env-vars="SETTLEMENT_PORT=${{ secrets.SETTLEMENT_PORT }},JWT_SECRET=${{ secrets.JWT_SECRET }},DB_HOST=${{ secrets.DB_HOST }},DB_NAME=${{ secrets.DB_NAME }},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},DB_PORT=${{ secrets.DB_PORT }},ODDS_API_KEY=${{ secrets.ODDS_API_KEY }},CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }}"

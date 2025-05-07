@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { Sequelize } = require("sequelize");
-
+/*
 // Detect whether you're running in GCP (socket path) or locally (hostname)
 const isSocket = process.env.DB_HOST?.startsWith("/cloudsql/");
 
@@ -18,6 +18,37 @@ const sequelize = new Sequelize(
       : {}
   }
 );
+*/
+// Determine if running in Cloud Run with Cloud SQL
+const isCloudSQL = process.env.DB_HOST?.includes("/cloudsql/");
+console.log("▶️ [db.js] DB_HOST:", process.env.DB_HOST);
+console.log("▶️ [db.js] isCloudSQL:", isCloudSQL);
+
+// Configure connection options
+let config = {
+  dialect: "postgres",
+  logging: console.log
+};
+
+if (isCloudSQL) {
+  // Cloud SQL with Unix socket
+  config = {
+    ...config,
+    host: "/cloudsql/" + process.env.CLOUDSQL_INSTANCE,
+    dialectOptions: {
+      socketPath: "/cloudsql/" + process.env.CLOUDSQL_INSTANCE,
+    }
+  };
+  console.log("▶️ [db.js] Using Cloud SQL socket connection:", `/cloudsql/${process.env.CLOUDSQL_INSTANCE}`);
+} else {
+  // Standard TCP connection for local development
+  config = {
+    ...config,
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT || 5432
+  };
+  console.log("▶️ [db.js] Using standard TCP connection");
+}
 
 sequelize
   .authenticate()
