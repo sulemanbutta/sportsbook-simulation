@@ -12,6 +12,9 @@ ENV PORT = ${PORT}
 COPY package.json ./
 RUN npm install
 
+
+# no-op bump to force cache invalidation:
+LABEL build-ts="2025-05-06T23:15:00Z"
 # Copy the rest of the app
 COPY . .
 
