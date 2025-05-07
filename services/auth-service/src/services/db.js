@@ -1,7 +1,20 @@
 require("dotenv").config();
+const fs = require("fs");
+
+// NO-OP BUILD MARKER: 2025-05-06T22:10:00Z
+console.log("▶️ [auth db.js] Build marker: 2025-05-06T22:10:00Z");
+
+const rawHost = process.env.DB_HOST;
+console.log("▶️ [auth db.js] process.env.DB_HOST =", rawHost);
+console.log("▶️ [auth db.js] typeof DB_HOST =", typeof rawHost);
+
+// (rest of your Sequelize logic…)
+
+
+
+
 const { Sequelize } = require("sequelize");
  
-const rawHost = process.env.DB_HOST;  // now the public IP
 const port    = process.env.DB_PORT || 5432;
 
 console.log("▶️ [db.js] Connecting via public IP:", rawHost, port);
