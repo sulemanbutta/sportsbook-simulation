@@ -25,6 +25,7 @@ const sequelize = new Sequelize(
 
 // test
 sequelize.authenticate()
+  .sync({ alter: true })
   .then(() => console.log("Database connection successful"))
   .catch(err => console.error("Database connection failed:", err));
 
