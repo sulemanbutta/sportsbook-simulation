@@ -4,7 +4,7 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-ARG PORT
+#ARG PORT
 
 #ENV PORT = $PORT
 ENV NODE_OPTIONS=--dns-result-order=ipv4first

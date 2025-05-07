@@ -7,6 +7,7 @@ WORKDIR /app
 #ARG PORT
 
 #ENV PORT = ${PORT}
+ENV NODE_OPTIONS=--dns-result-order=ipv4first
 
 # Copy package.json and install dependencies
 COPY package.json ./
