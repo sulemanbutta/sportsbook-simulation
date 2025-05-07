@@ -23,10 +23,17 @@ const sequelize = new Sequelize(
   }
 );
 
-// test
 sequelize.authenticate()
-  .sync({ alter: true })
-  .then(() => console.log("Database connection successful"))
-  .catch(err => console.error("Database connection failed:", err));
+  .then(() => {
+    console.log("Database connection successful");
+    return sequelize.sync({ alter: true });
+  })
+  .then(() => {
+    console.log("All models were synchronized");
+  })
+  .catch((err) => {
+    console.error("DB init failed:", err);
+    // process.exit(1);
+  });
 
 module.exports = sequelize;
