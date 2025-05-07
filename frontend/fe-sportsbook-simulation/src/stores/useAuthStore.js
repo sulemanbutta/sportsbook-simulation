@@ -30,15 +30,19 @@ export const useAuthStore = defineStore('auth', {
     },
     async signup({ username, email, password }) {
       //const res = await axios.post('http://localhost:4000/auth/register', {
-      const AUTH_API = import.meta.env.VITE_AUTH_API_URL;
-      const res = await axios.post(`${AUTH_API}/auth/register`, {
-        username,
-        email,
-        password,
-      })
-      this.token = res.data.token
-      localStorage.setItem('token', this.token)
-      await this.fetchUser()
+      try {
+        const AUTH_API = import.meta.env.VITE_AUTH_API_URL;
+        const res = await axios.post(`${AUTH_API}/auth/register`, {
+          username,
+          email,
+          password,
+        })
+        this.token = res.data.token
+        localStorage.setItem('token', this.token)
+        await this.fetchUser()
+      } catch (error) {
+        console.error('Failed to register user:', error)
+      }
     },
     async fetchUser() {
       if (!this.token) return
