@@ -48,7 +48,7 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy auth-service \
-            --image=${{ steps.build_image.outputs.image_url }}
+            --image=${{ steps.build_image.outputs.image_url }} \
             --platform=managed \
             --region=us-central1 \
             --allow-unauthenticated \
