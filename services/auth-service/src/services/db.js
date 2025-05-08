@@ -1,4 +1,10 @@
 require("dotenv").config();
+console.log("Auth DB Code Version: MAY8_V1");
+console.log(`▶️ [auth db.js] K_SERVICE: ${process.env.K_SERVICE}`);
+console.log(`▶️ [auth db.js] DB_INSTANCE_CONNECTION_NAME: ${process.env.DB_INSTANCE_CONNECTION_NAME}`);
+console.log(`▶️ [auth db.js] DB_HOST from env: ${process.env.DB_HOST}`);
+console.log(`▶️ [auth db.js] DB_USER from env: ${process.env.DB_USER}`);
+// ... rest of your file
 const { Sequelize } = require("sequelize");
 
 const instanceConnectionName = process.env.DB_INSTANCE_CONNECTION_NAME; // e.g., my-project:us-central1:my-instance
