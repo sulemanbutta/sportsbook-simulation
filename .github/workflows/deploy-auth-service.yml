@@ -43,11 +43,11 @@ jobs:
           echo "Pushing image: $IMAGE_TAG"
           docker push $IMAGE_TAG
           
-          echo "image_tag_output=$IMAGE_TAG"
+          echo "image_tag_output=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Debug deployed image name and secrets
         run: |
-          echo "Image built and tagged: ${{ steps.build_image.outputs.image_tag_sha_output }}" # Access the output
+          echo "Image built and tagged: ${{ steps.build_image.outputs.image_tag_output }}" # Access the output
           echo "Cloud SQL Instance: ${{ secrets.DB_INSTANCE_CONNECTION_NAME }}" 
 
       - name: Deploy to Cloud Run
