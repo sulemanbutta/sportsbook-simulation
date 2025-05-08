@@ -7,15 +7,12 @@ WORKDIR /app
 #ARG PORT
 
 #ENV PORT = ${PORT}
-ENV NODE_OPTIONS=--dns-result-order=ipv4first
 
 # Copy package.json and install dependencies
 COPY package.json ./
 RUN npm install
 
 
-# no-op bump to force cache invalidation:
-LABEL build-ts="2025-05-06T23:15:00Z"
 # Copy the rest of the app
 COPY . .
 

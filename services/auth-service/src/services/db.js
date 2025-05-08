@@ -1,55 +1,34 @@
 require("dotenv").config();
-const fs = require("fs");
-
-// NO-OP BUILD MARKER: 2025-05-06T22:10:00Z
-console.log("▶️ [auth db.js] Build marker: 2025-05-06T22:10:00Z");
-
-const rawHost = process.env.DB_HOST;
-console.log("▶️ [auth db.js] process.env.DB_HOST =", rawHost);
-console.log("▶️ [auth db.js] typeof DB_HOST =", typeof rawHost);
-
-// (rest of your Sequelize logic…)
-
-
-
-
 const { Sequelize } = require("sequelize");
- 
-const port    = process.env.DB_PORT || 5432;
 
-console.log("▶️ [db.js] Connecting via public IP:", rawHost, port);
+const instanceConnectionName = process.env.DB_INSTANCE_CONNECTION_NAME; // e.g., my-project:us-central1:my-instance
+const dbUser = process.env.DB_USER;
+const dbPassword = process.env.DB_PASSWORD;
+const dbName = process.env.DB_NAME;
+const dbPort = process.env.DB_PORT || 5432;
 
-console.log("▶️ [db.js] process.env.DB_HOST =", process.env.DB_HOST);
-console.log("▶️ [db.js] typeof DB_HOST =", typeof process.env.DB_HOST);
-
-
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
-  {
+console.log(`▶️ [auth db.js] Connecting to Cloud SQL instance via Unix socket: /cloudsql/${instanceConnectionName}`);
+const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
     dialect: "postgres",
-    host: rawHost,
-    port,
+    host: `/cloudsql/${instanceConnectionName}`,
     dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
-      }
-    }
-  }
-);
+      // socketPath: `/cloudsql/${instanceConnectionName}/.s.PGSQL.${dbPort}`
+    },
+    logging: console.log,
+  });
 
-sequelize.authenticate()
+
+sequelize
+  .authenticate()
   .then(() => {
-    console.log("Database connection successful");
-    return sequelize.sync({ alter: true });
+    console.log("[auth db.js] Database connection successful.");
+    return sequelize.sync({ alter: true }); 
   })
   .then(() => {
-    console.log("All models were synchronized");
+    console.log("[auth db.js] All models were synchronized successfully.");
   })
   .catch((err) => {
-    console.error("DB init failed:", err);
+    console.error("[auth db.js] Database connection failed:", err);
     // process.exit(1);
   });
 

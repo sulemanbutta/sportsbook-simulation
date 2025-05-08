@@ -1,6 +1,5 @@
-console.log("▶️ [index.js] Starting Auth Service…1");
 require("dotenv").config();
-console.log("▶️ [index.js] Starting Auth Service…2");
+console.log("▶️ [index.js] Starting Auth Service");
 const express = require("express");
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");

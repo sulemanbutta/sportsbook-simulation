@@ -35,9 +35,6 @@ services:
       - ./services/auth-service/.env
     depends_on:
       - db
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
   
   betting-service:
     container_name: betting-service
