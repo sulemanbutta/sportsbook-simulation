@@ -36,25 +36,49 @@ jobs:
         id: build_image
         run: |
           IMAGE_TAG=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/sportsbook-repo/auth-service:${{ github.sha }}
+
+          echo "VERIFY - Constructed IMAGE_TAG: '$IMAGE_TAG'"
+
+          if [ -z "$IMAGE_TAG" ] || [ "$IMAGE_TAG" = ":" ]; then
+             echo "Error: IMAGE_TAG is empty or malformed: '$IMAGE_TAG'"
+             exit 1
+          fi          
           
           echo "Building image: $IMAGE_TAG"
           docker build -t $IMAGE_TAG -f services/auth-service/Dockerfile ./services/auth-service
-          
+
           echo "Pushing image: $IMAGE_TAG"
           docker push $IMAGE_TAG
           
+          echo "Attempting to set output: image_tag_output with value: '$IMAGE_TAG'"
           echo "image_tag_output=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
 
       - name: Debug deployed image name and secrets
         run: |
-          echo "Image built and tagged: ${{ steps.build_image.outputs.image_tag_output }}" # Access the output
-          echo "Cloud SQL Instance: ${{ secrets.DB_INSTANCE_CONNECTION_NAME }}" 
+          echo "DEBUG - Value from steps.build_image.outputs.image_tag_output: '${{ steps.build_image.outputs.image_tag_output }}'"
+  
 
       - name: Deploy to Cloud Run
         run: |
+
+          echo "--- Start of Deploy to Cloud Run Step ---"
+          echo "Attempting to read output: steps.build_image.outputs.image_tag_output"
+          echo "Value raw: '${{ steps.build_image.outputs.image_tag_output }}'" # Raw output
+
+          # Correctly access 'image_tag_output'
+          DEPLOY_IMAGE_NAME="${{ steps.build_image.outputs.image_tag_output }}"
+          echo "DEPLOY - Image name received for deployment: '$DEPLOY_IMAGE_NAME'"
+
+          if [ -z "$DEPLOY_IMAGE_NAME" ]; then
+          echo "ERROR_CHECK: DEPLOY_IMAGE_NAME is empty. Cannot deploy."
+          exit 1
+          else
+            echo "INFO_CHECK: DEPLOY_IMAGE_NAME is NOT empty. Proceeding."
+          fi
+
           gcloud run deploy auth-service \
-            --image=${{ steps.build_image.outputs.image_tag_output }} \
+            --image="$DEPLOY_IMAGE_NAME" \
             --platform=managed \
             --region=us-central1 \
             --allow-unauthenticated \
