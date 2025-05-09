@@ -12,9 +12,9 @@ WORKDIR /app
 #COPY package.json ./
 #RUN npm install
 COPY package*.json ./
-
+RUN npm install
 # Install dependencies
-RUN npm ci --only=production
+#RUN npm ci --only=production
 
 # Copy the rest of the app
 COPY . .
