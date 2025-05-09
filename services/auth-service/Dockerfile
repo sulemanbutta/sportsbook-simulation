@@ -9,9 +9,12 @@ WORKDIR /app
 #ENV PORT = ${PORT}
 
 # Copy package.json and install dependencies
-COPY package.json ./
-RUN npm install
+#COPY package.json ./
+#RUN npm install
+COPY package*.json ./
 
+# Install dependencies
+RUN npm ci --only=production
 
 # Copy the rest of the app
 COPY . .

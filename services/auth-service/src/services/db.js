@@ -1,10 +1,14 @@
 require("dotenv").config();
-console.log("Auth DB Code Version: MAY8_V1");
+const buildTimestamp = process.env.BUILD_TIMESTAMP || 'unknown';
+const commitSha = process.env.COMMIT_SHA || 'unknown';
+console.log(`▶️ [auth db.js] Auth DB Code Version: MAY8_V2`);
+console.log(`▶️ [auth db.js] Build: ${buildTimestamp}`);
+console.log(`▶️ [auth db.js] Commit: ${commitSha}`);
 console.log(`▶️ [auth db.js] K_SERVICE: ${process.env.K_SERVICE}`);
 console.log(`▶️ [auth db.js] DB_INSTANCE_CONNECTION_NAME: ${process.env.DB_INSTANCE_CONNECTION_NAME}`);
 console.log(`▶️ [auth db.js] DB_HOST from env: ${process.env.DB_HOST}`);
 console.log(`▶️ [auth db.js] DB_USER from env: ${process.env.DB_USER}`);
-// ... rest of your file
+
 const { Sequelize } = require("sequelize");
 
 const instanceConnectionName = process.env.DB_INSTANCE_CONNECTION_NAME; // e.g., my-project:us-central1:my-instance
@@ -18,7 +22,7 @@ const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
     dialect: "postgres",
     host: `/cloudsql/${instanceConnectionName}`,
     dialectOptions: {
-      // socketPath: `/cloudsql/${instanceConnectionName}/.s.PGSQL.${dbPort}`
+      socketPath: `/cloudsql/${instanceConnectionName}`
     },
     logging: console.log,
   });
