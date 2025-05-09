@@ -4,6 +4,14 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
+# Build arguments for version tracking
+ARG BUILD_TIMESTAMP
+ARG COMMIT_SHA
+
+# Set environment variables for version tracking
+ENV BUILD_TIMESTAMP=${BUILD_TIMESTAMP}
+ENV COMMIT_SHA=${COMMIT_SHA}
+
 #ARG PORT
 
 #ENV PORT = ${PORT}
@@ -18,6 +26,11 @@ RUN npm install
 
 # Copy the rest of the app
 COPY . .
+
+RUN echo "Building auth-service version: ${BUILD_TIMESTAMP}" && \
+    echo "Commit: ${COMMIT_SHA}" && \
+    echo "Files in container:" && \
+    find . -type f | grep -v "node_modules" | sort
 
 # Expose the port
 # EXPOSE=4000

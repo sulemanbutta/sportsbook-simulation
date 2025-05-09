@@ -18,14 +18,11 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Fetch complete history
-
-      - name: Create .dockerignore file
-        working-directory: ./services/auth-service
+  
+      - name: Setup timestamp for unique build
         run: |
-          echo "node_modules" > .dockerignore
-          echo ".git" >> .dockerignore
-          echo ".env" >> .dockerignore
-          echo "npm-debug.log" >> .dockerignore
+          echo "BUILD_TIMESTAMP=$(date -u +"%Y%m%d%H%M%S")" >> $GITHUB_ENV
+          echo "Deploying build: ${{ env.BUILD_TIMESTAMP }}"
 
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v1
@@ -42,6 +39,19 @@ jobs:
         run: |
           gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
 
+      - name: Create .dockerignore file
+        working-directory: ./services/auth-service
+        run: |
+          echo "node_modules" > .dockerignore
+          echo ".git" >> .dockerignore
+          echo ".env" >> .dockerignore
+          echo "npm-debug.log" >> .dockerignore
+
+      - name: Debug - List files to be included in build
+        run: |
+          echo "Files in auth-service directory:"
+          find services/auth-service -type f | grep -v "node_modules" | sort
+
       - name: Build and push Docker image
         id: build_image
         run: |
@@ -56,8 +66,9 @@ jobs:
           
           # Build with no cache and pass commit SHA
           docker build --no-cache \
-            --build-arg COMMIT_SHA=${COMMIT_SHA} \
-            -t ${IMAGE_TAG} .
+            --build-arg BUILD_TIMESTAMP="${{ env.BUILD_TIMESTAMP }}" \
+            --build-arg COMMIT_SHA="${{ github.sha }}" \
+            -t "${IMAGE_TAG}" .
           
           echo "Pushing image: $IMAGE_TAG"
           docker push ${IMAGE_TAG}
@@ -66,7 +77,8 @@ jobs:
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
 
 
-      - name: Debug deployed image name and secrets
+
+      - name: Debug deployed image name
         run: |
           echo "DEBUG - Value from steps.build_image.outputs.image_tag_output: '${{ steps.build_image.outputs.image_tag_output }}'"
   
@@ -91,3 +103,20 @@ jobs:
             --set-env-vars="BUILD_ID=${DEPLOY_TIMESTAMP}" \
             --set-env-vars="COMMIT_SHA=${{ github.sha }}" \
             --service-account=github-actions-deployer@sportsbook-simulation.iam.gserviceaccount.com
+            --no-traffic \
+            --tag=build-${{ env.BUILD_TIMESTAMP }}
+
+
+      - name: Migrate traffic to new revision
+        run: |
+          echo "Migrating 100% traffic to new revision..."
+          gcloud run services update-traffic auth-service \
+            --platform=managed \
+            --region=us-central1 \
+            --to-tags=build-${{ env.BUILD_TIMESTAMP }}=100
+
+      - name: Get service URL
+        run: |
+          SERVICE_URL=$(gcloud run services describe auth-service --platform managed --region us-central1 --format 'value(status.url)')
+          echo "Service URL: $SERVICE_URL"
+          echo "Deployment complete. Check logs in Cloud Run console."
