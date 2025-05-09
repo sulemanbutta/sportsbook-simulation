@@ -4,11 +4,7 @@ const { Sequelize } = require("sequelize");
 const rawHost = process.env.DB_HOST;  // now the public IP
 const port    = process.env.DB_PORT || 5432;
 
-console.log("▶️ [db.js] Connecting via public IP:", rawHost, port);
-
-console.log("▶️ [db.js] process.env.DB_HOST =", process.env.DB_HOST);
-console.log("▶️ [db.js] typeof DB_HOST =", typeof process.env.DB_HOST);
-
+console.log("▶️ [betting db.js] Connecting via public IP:", rawHost, port);
 
 
 const sequelize = new Sequelize(
