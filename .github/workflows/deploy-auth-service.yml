@@ -103,17 +103,7 @@ jobs:
             --set-env-vars="BUILD_ID=${DEPLOY_TIMESTAMP}" \
             --set-env-vars="COMMIT_SHA=${{ github.sha }}" \
             --service-account=github-actions-deployer@sportsbook-simulation.iam.gserviceaccount.com
-            --no-traffic \
             --tag=build-${{ env.BUILD_TIMESTAMP }}
-
-
-      - name: Migrate traffic to new revision
-        run: |
-          echo "Migrating 100% traffic to new revision..."
-          gcloud run services update-traffic auth-service \
-            --platform=managed \
-            --region=us-central1 \
-            --to-tags=build-${{ env.BUILD_TIMESTAMP }}=100
 
       - name: Get service URL
         run: |
