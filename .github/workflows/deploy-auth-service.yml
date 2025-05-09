@@ -103,9 +103,3 @@ jobs:
             --set-env-vars="BUILD_ID=${DEPLOY_TIMESTAMP}" \
             --set-env-vars="COMMIT_SHA=${{ github.sha }}" \
             --service-account=github-actions-deployer@sportsbook-simulation.iam.gserviceaccount.com
-
-      - name: Get service URL
-        run: |
-          SERVICE_URL=$(gcloud run services describe auth-service --platform managed --region us-central1 --format 'value(status.url)')
-          echo "Service URL: $SERVICE_URL"
-          echo "Deployment complete. Check logs in Cloud Run console."

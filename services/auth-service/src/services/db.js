@@ -19,7 +19,8 @@ const dbName = process.env.DB_NAME;
 console.log(`▶️ [auth db.js] Connecting to Cloud SQL instance via Unix socket: /cloudsql/${instanceConnectionName}`);
 const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
   dialect: "postgres",
-  host: `/cloudsql/${instanceConnectionName}`,
+  host: "127.0.0.1",  // Connect to local proxy endpoint
+  port: 5432,  
   dialectOptions: {},
   logging: console.log, 
 /*
