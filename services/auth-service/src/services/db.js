@@ -18,18 +18,18 @@ const dbName = process.env.DB_NAME;
 
 console.log(`▶️ [auth db.js] Connecting to Cloud SQL instance via Unix socket: /cloudsql/${instanceConnectionName}`);
 const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
+  /*
   dialect: "postgres",
   host: process.env.DB_HOST,
   port: 5432,  
   dialectOptions: {},
   logging: console.log, 
-/*
+*/
     dialect: "postgres",
     dialectOptions: {
       socketPath: `/cloudsql/${instanceConnectionName}`
     },
     logging: console.log,
-*/
   });
 
 // Add retry logic for more resilient connections

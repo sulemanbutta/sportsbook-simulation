@@ -104,7 +104,6 @@ jobs:
             --set-env-vars="BUILD_ID=${DEPLOY_TIMESTAMP}" \
             --set-env-vars="COMMIT_SHA=${{ github.sha }}" \
             --service-account=github-actions-deployer@sportsbook-simulation.iam.gserviceaccount.com
-            --update-traffic
 
       - name: Verify traffic routing
         run: |
