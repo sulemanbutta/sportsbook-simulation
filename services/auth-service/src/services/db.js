@@ -1,7 +1,7 @@
 require("dotenv").config();
 const buildTimestamp = process.env.BUILD_TIMESTAMP || 'unknown';
 const commitSha = process.env.COMMIT_SHA || 'unknown';
-console.log(`▶️ [auth db.js] Auth DB Code Version: MAY8_V2`);
+console.log(`▶️ [auth db.js] Auth DB Code Version: MAY8_V3`);
 console.log(`▶️ [auth db.js] Build: ${buildTimestamp}`);
 console.log(`▶️ [auth db.js] Commit: ${commitSha}`);
 console.log(`▶️ [auth db.js] K_SERVICE: ${process.env.K_SERVICE}`);
