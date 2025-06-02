@@ -3,7 +3,7 @@ const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../../config/config.json')[env];
 const buildTimestamp = process.env.BUILD_TIMESTAMP || process.env.BUILD_ID || 'unknown';
 const commitSha = process.env.COMMIT_SHA || 'unknown';
-console.log(`▶️ [auth db.js] Auth DB Code Version: SECURE_DIRECT_IP_V4`);
+console.log(`▶️ [auth db.js] Auth DB Code Version: SECURE_DIRECT_IP_V5`);
 console.log(`▶️ [auth db.js] Build: ${buildTimestamp}`);
 console.log(`▶️ [auth db.js] Commit: ${commitSha}`);
 
