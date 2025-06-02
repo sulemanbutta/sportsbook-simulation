@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require("cors");
 const { initializeDatabase } = require('./services/db');
 const { loadModels } = require('./models');
 
@@ -29,6 +30,8 @@ function startServer() {
   
   // Set up Express app immediately
   const app = express();
+  const allowed = [ 'https://sportsbook-simulation.web.app', 'https://sportsbook-simulation.firebaseapp.com' ];
+
   
   // Middleware
   app.use(express.json());
