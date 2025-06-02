@@ -7,40 +7,30 @@ console.log(`▶️ [auth db.js] Auth DB Code Version: SECURE_DIRECT_IP_V7`);
 console.log(`▶️ [auth db.js] Build: ${buildTimestamp}`);
 console.log(`▶️ [auth db.js] Commit: ${commitSha}`);
 
-const isCloudRun = !!process.env.K_SERVICE;
-console.log(`▶️ [auth db.js] Environment: ${isCloudRun ? 'Cloud Run' : 'Local Development'}`);
+
 
 const { Sequelize } = require("sequelize");
+const { Connector } = require('@google-cloud/cloud-sql-connector');
 
+const isCloudRun = !!process.env.K_SERVICE;
 const dbUser = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
 const dbName = process.env.DB_NAME;
-//const dbHost = process.env.DB_HOST || "34.172.127.125";
-/*
-const dbHost = isCloudRun 
-  ? `/cloudsql/${process.env.DB_INSTANCE_CONNECTION_NAME}`
-  : "localhost"; // or whatever you use locally
-*/
-const dbHost = isCloudRun ? 'localhost' : 'localhost';
-const dbPort = 5432;
-console.log(`▶️ [auth db.js] DB_HOST: ${dbHost}`);
-console.log(`▶️ [auth db.js] DB_NAME: ${dbName}`);
-console.log(`▶️ [auth db.js] DB_USER: ${dbUser}`);
-//console.log(`▶️ [auth db.js] Using SECURE direct IP connection with SSL`);
-console.log(`▶️ [auth db.js] Connection type: ${isCloudRun ? 'Unix Socket (Cloud SQL Proxy)' : 'Direct'}`);
 
 let sequelize;
 
 if (isCloudRun) {
 
+  const connector = new Connector();
+  const clientOpts = connector.getOptions({
+    instanceConnectionName: 'sportsbook-simulation:us-central1:sportsbook-instance',
+    ipType: 'PUBLIC',
+  });
+
   sequelize = new Sequelize(dbName, dbUser, dbPassword, {
-    dialect: "postgres",
-    host: dbHost,  // localhost
-    port: dbPort,  // 5432
-    logging: false, // Disable SQL logging
-    dialectOptions: {
-      // Remove SSL config - Cloud SQL Proxy handles encryption
-    },
+    dialect: 'postgres',
+    logging: false, // Disable SQL logging for security
+    dialectOptions: clientOpts,
     pool: {
       max: 5,
       min: 0,
@@ -48,6 +38,8 @@ if (isCloudRun) {
       idle: 10000,
     }
   });
+  
+  console.log(`▶️ [auth db.js] Using Cloud SQL Connector`);
   
 } else {
   // Local development
@@ -59,73 +51,18 @@ if (isCloudRun) {
   }
 }
 
-// Connection logic for Cloud Run
-if (isCloudRun) {
-  let retries = 3;
-  
-  const connectWithRetry = async () => {
-    try {
-      console.log(`[auth db.js] 🔐 Attempting SECURE SSL connection to ${dbHost}:5432...`);
-      console.log(`[auth db.js] 🔐 SSL Required: Yes (rejectUnauthorized: false)`);
-      console.log(`[auth db.js] 🔐 Connection Timeout: 30s`);
-      
-      await sequelize.authenticate();
-      console.log("[auth db.js] ✅ SECURE database connection successful!");
-      console.log("[auth db.js] 🔐 SSL encryption active");
-      
-      await sequelize.sync({ alter: true });
-      console.log("[auth db.js] ✅ Models synchronized!");
-      
-    } catch (err) {
-      console.error(`[auth db.js] ❌ Secure connection failed (${retries} retries left):`, err.message);
-      
-      // Try without SSL requirement as fallback
-      if (err.message.includes('certificate') && retries === 2) {
-        console.log(`[auth db.js] 🔄 Trying connection without SSL requirement as fallback...`);
-        
-        try {
-          const fallbackSequelize = new Sequelize(dbName, dbUser, dbPassword, {
-            dialect: "postgres",
-            host: dbHost,
-            port: 5432,
-            dialectOptions: {
-              ssl: false  // Disable SSL for fallback
-            },
-            logging: console.log
-          });
-          
-          await fallbackSequelize.authenticate();
-          console.log("[auth db.js] ✅ Fallback connection (without SSL) successful!");
-          
-          // Replace the main sequelize instance
-          sequelize = fallbackSequelize;
-          await sequelize.sync({ alter: true });
-          console.log("[auth db.js] ✅ Fallback models synchronized!");
-          return;
-          
-        } catch (fallbackErr) {
-          console.error("[auth db.js] ❌ Fallback connection also failed:", fallbackErr.message);
-        }
-      }
-      
-      if (retries > 0) {
-        retries--;
-        const delay = 5000;
-        console.log(`[auth db.js] ⏳ Retrying secure connection in ${delay/1000} seconds...`);
-        setTimeout(connectWithRetry, delay);
-      } else {
-        console.error("[auth db.js] ❌ Max retries reached - secure connection failed");
-      }
-    }
-  };
-  
-  connectWithRetry();
-  
-} else {
-  setTimeout(() => {
-    sequelize.authenticate();
-    sequelize.sync();
-  }, 100);
-}
+// Connection test
+sequelize.authenticate()
+  .then(() => {
+    console.log("✅ Database connection successful!");
+    return sequelize.sync({ alter: true });
+  })
+  .then(() => {
+    console.log("✅ Models synchronized!");
+  })
+  .catch(err => {
+    console.error("❌ Database connection failed:", err.message);
+  });
+
 
 module.exports = sequelize;
