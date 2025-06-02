@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require("cors");
+const authRoutes = require("./routes/authRoutes");
 const { initializeDatabase } = require('./services/db');
 const { loadModels } = require('./models');
 
@@ -78,7 +79,6 @@ function startServer() {
   });
   
   // Auth routes
-  const authRoutes = require('./routes/auth');
   app.use('/auth', authRoutes);
   
   // Start server immediately
