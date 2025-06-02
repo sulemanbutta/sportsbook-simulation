@@ -1,5 +1,5 @@
 const express = require('express');
-const { initializeDatabase } = require('./config/db');
+const { initializeDatabase } = require('./services/db');
 const { loadModels } = require('./models');
 
 // Global state
