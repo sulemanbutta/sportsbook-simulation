@@ -15,46 +15,33 @@ const { Sequelize } = require("sequelize");
 const dbUser = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
 const dbName = process.env.DB_NAME;
-const dbHost = process.env.DB_HOST || "34.172.127.125";
+//const dbHost = process.env.DB_HOST || "34.172.127.125";
+const dbHost = isCloudRun 
+  ? `/cloudsql/${process.env.DB_INSTANCE_CONNECTION_NAME}`
+  : "localhost"; // or whatever you use locally
 
 console.log(`▶️ [auth db.js] DB_HOST: ${dbHost}`);
 console.log(`▶️ [auth db.js] DB_NAME: ${dbName}`);
 console.log(`▶️ [auth db.js] DB_USER: ${dbUser}`);
-console.log(`▶️ [auth db.js] Using SECURE direct IP connection with SSL`);
+//console.log(`▶️ [auth db.js] Using SECURE direct IP connection with SSL`);
+console.log(`▶️ [auth db.js] Connection type: ${isCloudRun ? 'Unix Socket (Cloud SQL Proxy)' : 'Direct'}`);
 
 let sequelize;
 
 if (isCloudRun) {
-  // Fixed SSL configuration for Cloud SQL direct connection
+
   sequelize = new Sequelize(dbName, dbUser, dbPassword, {
     dialect: "postgres",
-    host: dbHost,
-    port: 5432,
+    host: dbHost, // This will be the Unix socket path
+    logging: false, // Disable all SQL logging
     dialectOptions: {
-      ssl: {
-        require: true,              // Force SSL connection
-        rejectUnauthorized: false   // Don't verify SSL certificates (required for Cloud SQL)
-      },
-      // Connection timeouts
-      connectTimeout: 30000,
-      requestTimeout: 30000,
-    },
-    logging: (sql) => {
-      // Only log queries in development
-      if (process.env.NODE_ENV !== 'production') {
-        console.log(`[SQL Query]: ${sql}`);
-      }
+      socketPath: dbHost, // Use Unix socket
     },
     pool: {
       max: 5,
       min: 0,
       acquire: 30000,
       idle: 10000,
-      evict: 10000
-    },
-    retry: {
-      max: 3,
-      timeout: 30000
     }
   });
   
