@@ -1,16 +1,35 @@
 require("dotenv").config();
+const fs = require('fs');
 
 // Version tracking for deployment verification
 const buildTimestamp = process.env.BUILD_TIMESTAMP || process.env.BUILD_ID || 'unknown';
 const commitSha = process.env.COMMIT_SHA || 'unknown';
-console.log(`▶️ [auth db.js] Auth DB Code Version: SOCKET_STEP_BY_STEP_V1`);
+console.log(`▶️ [auth db.js] Auth DB Code Version: SOCKET_DEBUG_V1`);
 console.log(`▶️ [auth db.js] Build: ${buildTimestamp}`);
 console.log(`▶️ [auth db.js] Commit: ${commitSha}`);
 
 // Environment detection
 const isCloudRun = !!process.env.K_SERVICE;
 console.log(`▶️ [auth db.js] Environment: ${isCloudRun ? 'Cloud Run' : 'Local Development'}`);
-console.log(`▶️ [auth db.js] K_SERVICE: ${process.env.K_SERVICE}`);
+
+// Debug: Check if socket directory exists
+if (isCloudRun) {
+  const socketDir = '/cloudsql';
+  console.log(`▶️ [auth db.js] Checking socket directory: ${socketDir}`);
+  
+  try {
+    if (fs.existsSync(socketDir)) {
+      console.log(`✅ [auth db.js] Socket directory exists: ${socketDir}`);
+      const contents = fs.readdirSync(socketDir);
+      console.log(`▶️ [auth db.js] Socket directory contents:`, contents);
+    } else {
+      console.log(`❌ [auth db.js] Socket directory does NOT exist: ${socketDir}`);
+      console.log(`❌ [auth db.js] This indicates Cloud SQL instance is not properly attached`);
+    }
+  } catch (error) {
+    console.error(`❌ [auth db.js] Error checking socket directory:`, error.message);
+  }
+}
 
 // Database connection parameters
 const instanceConnectionName = process.env.DB_INSTANCE_CONNECTION_NAME;
@@ -23,22 +42,48 @@ console.log(`▶️ [auth db.js] DB_NAME: ${dbName}`);
 console.log(`▶️ [auth db.js] DB_USER: ${dbUser}`);
 console.log(`▶️ [auth db.js] DB_PASSWORD: ${dbPassword ? '[SET]' : '[NOT SET]'}`);
 
+// Check for conflicting environment variables
+const conflictingVars = ['DB_HOST', 'DATABASE_URL', 'PGHOST', 'POSTGRES_HOST'];
+conflictingVars.forEach(varName => {
+  if (process.env[varName]) {
+    console.log(`⚠️ [auth db.js] WARNING: ${varName} is set to: ${process.env[varName]}`);
+    console.log(`⚠️ [auth db.js] This may interfere with socket connection`);
+  }
+});
+
 const { Sequelize } = require("sequelize");
 
 let sequelize;
 
 if (isCloudRun && instanceConnectionName) {
-  // Cloud Run with socket path connection
   const socketPath = `/cloudsql/${instanceConnectionName}`;
   console.log(`▶️ [auth db.js] Using Cloud SQL Unix socket connection`);
   console.log(`▶️ [auth db.js] Socket path: ${socketPath}`);
   
+  // Check if the specific socket file exists
+  try {
+    if (fs.existsSync(socketPath)) {
+      console.log(`✅ [auth db.js] Socket path exists: ${socketPath}`);
+      const stats = fs.statSync(socketPath);
+      console.log(`▶️ [auth db.js] Socket is directory: ${stats.isDirectory()}`);
+      if (stats.isDirectory()) {
+        const socketContents = fs.readdirSync(socketPath);
+        console.log(`▶️ [auth db.js] Socket directory contents:`, socketContents);
+      }
+    } else {
+      console.log(`❌ [auth db.js] Socket path does NOT exist: ${socketPath}`);
+    }
+  } catch (error) {
+    console.error(`❌ [auth db.js] Error checking socket path:`, error.message);
+  }
+  
+  // Try multiple socket connection approaches
+  console.log(`▶️ [auth db.js] Attempting socket connection with multiple approaches`);
+  
+  // Approach 1: Use socket path as host (PostgreSQL specific)
   sequelize = new Sequelize(dbName, dbUser, dbPassword, {
     dialect: "postgres",
-    host: socketPath, 
-    dialectOptions: {
-
-    },
+    host: socketPath,  // Use socket path as host
     logging: (sql) => {
       console.log(`[SQL Query]: ${sql}`);
     },
@@ -51,10 +96,7 @@ if (isCloudRun && instanceConnectionName) {
   });
   
 } else if (isCloudRun && !instanceConnectionName) {
-  // Error case: Cloud Run without instance connection name
   console.error(`❌ [auth db.js] CRITICAL ERROR: Running in Cloud Run but DB_INSTANCE_CONNECTION_NAME is missing!`);
-  console.error(`❌ [auth db.js] Required environment variable: DB_INSTANCE_CONNECTION_NAME`);
-  console.error(`❌ [auth db.js] Expected format: project:region:instance`);
   process.exit(1);
   
 } else {
@@ -74,31 +116,12 @@ if (isCloudRun && instanceConnectionName) {
       console.log(`[auth db.js] 📝 Mock model defined: ${modelName}`);
       return {
         name: modelName,
-        // Mock CRUD operations
-        findOne: async (options) => {
-          console.log(`[${modelName}] Mock findOne called`);
-          return null;
-        },
-        findAll: async (options) => {
-          console.log(`[${modelName}] Mock findAll called`);
-          return [];
-        },
-        create: async (data) => {
-          console.log(`[${modelName}] Mock create called with:`, Object.keys(data));
-          return { id: Math.floor(Math.random() * 1000), ...data };
-        },
-        findByPk: async (id) => {
-          console.log(`[${modelName}] Mock findByPk called with ID:`, id);
-          return null;
-        },
-        update: async (data, options) => {
-          console.log(`[${modelName}] Mock update called`);
-          return [1];
-        },
-        destroy: async (options) => {
-          console.log(`[${modelName}] Mock destroy called`);
-          return 1;
-        }
+        findOne: async () => null,
+        findAll: async () => [],
+        create: async (data) => ({ id: Math.floor(Math.random() * 1000), ...data }),
+        findByPk: async () => null,
+        update: async () => [1],
+        destroy: async () => 1
       };
     },
     query: async (sql, options) => {
@@ -111,52 +134,49 @@ if (isCloudRun && instanceConnectionName) {
 // Connection logic for Cloud Run only
 if (isCloudRun && instanceConnectionName) {
   let retries = 3;
-  let isConnected = false;
   
   const connectWithRetry = async () => {
     try {
       console.log(`[auth db.js] 🔄 Attempting database connection (${retries} retries remaining)...`);
-      console.log(`[auth db.js] 🔗 Connection details:`);
-      console.log(`[auth db.js]    Database: ${dbName}`);
-      console.log(`[auth db.js]    User: ${dbUser}`);
-      console.log(`[auth db.js]    Socket: /cloudsql/${instanceConnectionName}`);
+      console.log(`[auth db.js] 🔗 Connection approach: Socket path as host`);
+      console.log(`[auth db.js] 🔗 Socket path: ${socketPath}`);
       
       await sequelize.authenticate();
       console.log("[auth db.js] ✅ Database authentication successful!");
-      isConnected = true;
       
-      console.log("[auth db.js] 🔄 Synchronizing database models...");
       await sequelize.sync({ alter: true });
       console.log("[auth db.js] ✅ Database models synchronized successfully!");
-      
-      console.log("[auth db.js] 🎉 Database setup complete and ready!");
       
     } catch (err) {
       console.error(`[auth db.js] ❌ Database connection failed (${retries} retries left)`);
       console.error(`[auth db.js] Error type: ${err.name}`);
       console.error(`[auth db.js] Error message: ${err.message}`);
       
-      // Detailed error analysis
-      if (err.message.includes('ENOENT') || err.message.includes('No such file')) {
-        console.error("[auth db.js] 🔍 DIAGNOSIS: Socket file not found");
-        console.error("[auth db.js] 🔍 CAUSES:");
-        console.error("[auth db.js] 🔍   1. Cloud SQL instance not attached to Cloud Run service");
-        console.error("[auth db.js] 🔍   2. Incorrect instance connection name");
-        console.error("[auth db.js] 🔍   3. Cloud SQL proxy not started");
-      } else if (err.message.includes('ECONNREFUSED')) {
-        console.error("[auth db.js] 🔍 DIAGNOSIS: Connection refused by database");
-        console.error("[auth db.js] 🔍 CAUSES:");
-        console.error("[auth db.js] 🔍   1. Database credentials incorrect");
-        console.error("[auth db.js] 🔍   2. Database user doesn't exist");
-        console.error("[auth db.js] 🔍   3. Database user lacks permissions");
-      } else if (err.message.includes('authentication failed')) {
-        console.error("[auth db.js] 🔍 DIAGNOSIS: Authentication failed");
-        console.error("[auth db.js] 🔍 CAUSES:");
-        console.error("[auth db.js] 🔍   1. Incorrect password");
-        console.error("[auth db.js] 🔍   2. User doesn't exist");
-      } else if (err.message.includes('does not exist')) {
-        console.error("[auth db.js] 🔍 DIAGNOSIS: Database does not exist");
-        console.error("[auth db.js] 🔍 SOLUTION: Create database 'sportsbook_db'");
+      // If still getting TCP errors, try fallback approach
+      if (err.message.includes('127.0.0.1') && retries === 2) {
+        console.log(`[auth db.js] 🔄 Trying fallback: dialectOptions socketPath approach`);
+        
+        try {
+          const fallbackSequelize = new Sequelize(dbName, dbUser, dbPassword, {
+            dialect: "postgres",
+            dialectOptions: {
+              socketPath: `/cloudsql/${instanceConnectionName}`
+            },
+            logging: console.log
+          });
+          
+          await fallbackSequelize.authenticate();
+          console.log("[auth db.js] ✅ Fallback socket connection successful!");
+          
+          // Replace the main sequelize instance
+          sequelize = fallbackSequelize;
+          await sequelize.sync({ alter: true });
+          console.log("[auth db.js] ✅ Fallback models synchronized!");
+          return;
+          
+        } catch (fallbackErr) {
+          console.error("[auth db.js] ❌ Fallback socket connection also failed:", fallbackErr.message);
+        }
       }
       
       if (retries > 0) {
@@ -165,18 +185,15 @@ if (isCloudRun && instanceConnectionName) {
         console.log(`[auth db.js] ⏳ Retrying in ${delay/1000} seconds...`);
         setTimeout(connectWithRetry, delay);
       } else {
-        console.error("[auth db.js] ❌ CRITICAL: Max retries reached - database connection failed");
-        console.error("[auth db.js] ❌ Application will continue but database operations will fail");
-        console.error("[auth db.js] ❌ Check Cloud Run service configuration and try redeploying");
+        console.error("[auth db.js] ❌ CRITICAL: All connection attempts failed");
+        console.error("[auth db.js] ❌ Check Google Cloud Run Cloud SQL configuration");
       }
     }
   };
   
-  // Start connection attempt
   connectWithRetry();
   
 } else if (!isCloudRun) {
-  // Local development - immediate mock connection
   setTimeout(() => {
     console.log("[auth db.js] 🚀 Starting local development mock connection...");
     sequelize.authenticate();
