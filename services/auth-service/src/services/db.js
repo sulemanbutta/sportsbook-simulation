@@ -16,10 +16,13 @@ const dbUser = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
 const dbName = process.env.DB_NAME;
 //const dbHost = process.env.DB_HOST || "34.172.127.125";
+/*
 const dbHost = isCloudRun 
   ? `/cloudsql/${process.env.DB_INSTANCE_CONNECTION_NAME}`
   : "localhost"; // or whatever you use locally
-
+*/
+const dbHost = isCloudRun ? 'localhost' : 'localhost';
+const dbPort = 5432;
 console.log(`▶️ [auth db.js] DB_HOST: ${dbHost}`);
 console.log(`▶️ [auth db.js] DB_NAME: ${dbName}`);
 console.log(`▶️ [auth db.js] DB_USER: ${dbUser}`);
@@ -32,10 +35,11 @@ if (isCloudRun) {
 
   sequelize = new Sequelize(dbName, dbUser, dbPassword, {
     dialect: "postgres",
-    host: dbHost, // This will be the Unix socket path
-    logging: false, // Disable all SQL logging
+    host: dbHost,  // localhost
+    port: dbPort,  // 5432
+    logging: false, // Disable SQL logging
     dialectOptions: {
-      socketPath: dbHost, // Use Unix socket
+      // Remove SSL config - Cloud SQL Proxy handles encryption
     },
     pool: {
       max: 5,
