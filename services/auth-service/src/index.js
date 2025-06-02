@@ -1,57 +1,91 @@
-require("dotenv").config();
-console.log("▶️ [index.js] Starting Auth Service");
-const express = require("express");
-const cors = require("cors");
-const authRoutes = require("./routes/authRoutes");
-const { initializeDatabase } = require('./services/db'); // Updated path
-const { loadModels } = require('./models'); 
+const express = require('express');
+const { initializeDatabase } = require('./config/db');
+const { loadModels } = require('./models');
 
-async function startServer() {
-  console.log('▶️ [index.js] Starting Auth Service');
-  
+// Global state
+let db = null;
+let dbReady = false;
+let dbError = null;
+
+async function initializeDatabaseAsync() {
   try {
-    // Step 1: Initialize database connection
-    console.log('▶️ [index.js] Initializing database...');
+    console.log('▶️ [index.js] Initializing database in background...');
     const sequelize = await initializeDatabase();
     console.log('✅ [index.js] Database initialized');
     
-    // Step 2: Load models using your existing logic
     console.log('▶️ [index.js] Loading models...');
-    const db = loadModels(sequelize); // Pass sequelize to your existing function
+    db = loadModels(sequelize);
     console.log('✅ [index.js] Models loaded');
     
-    // Step 3: Set up Express app
-    console.log('▶️ [index.js] Setting up Express app...');
-    const app = express();
-    const allowed = [ 'https://sportsbook-simulation.web.app', 'https://sportsbook-simulation.firebaseapp.com' ];
-    // Middleware
-    app.use(express.json());
-    app.use(cors({
-      origin: allowed,
-      methods: ['GET','POST','PUT','DELETE'],
-      allowedHeaders: ['Content-Type','Authorization']
-    }));
-    
-    // Make db available to routes (if you use this pattern)
-    app.locals.db = db;
-    
-    // Routes
-    const authRoutes = require('./routes/auth');
-    app.use('/auth', authRoutes);
-    
-    // Health check
-    app.get('/health', (req, res) => {
-      res.json({ status: 'healthy', timestamp: new Date().toISOString() });
-    });
-    
-    // Start server
-    const PORT = process.env.PORT || 8080;
-    app.listen(PORT, () => {
-      console.log(`✅ Auth Service running on port ${PORT}`);
-    });
-    
+    dbReady = true;
   } catch (error) {
-    console.error('❌ [index.js] Failed to start server:', error);
-    process.exit(1);
+    console.error('❌ [index.js] Database initialization failed:', error);
+    dbError = error;
   }
 }
+
+function startServer() {
+  console.log('▶️ [index.js] Starting Auth Service');
+  
+  // Set up Express app immediately
+  const app = express();
+  
+  // Middleware
+  app.use(express.json());
+  app.use(cors({
+    origin: allowed,
+    methods: ['GET','POST','PUT','DELETE'],
+    allowedHeaders: ['Content-Type','Authorization']
+  }));
+  
+  // Health check - responds immediately
+  app.get('/health', (req, res) => {
+    const status = {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      database: dbReady ? 'ready' : 'initializing'
+    };
+    
+    if (dbError) {
+      status.database = 'error';
+      status.error = dbError.message;
+    }
+    
+    res.json(status);
+  });
+  
+  // Database-dependent routes with readiness check
+  app.use('/auth', (req, res, next) => {
+    if (!dbReady) {
+      if (dbError) {
+        return res.status(503).json({ 
+          error: 'Database connection failed',
+          message: 'Service temporarily unavailable'
+        });
+      }
+      return res.status(503).json({ 
+        error: 'Database initializing',
+        message: 'Service starting up, please try again in a moment'
+      });
+    }
+    
+    // Make db available to routes
+    req.db = db;
+    next();
+  });
+  
+  // Auth routes
+  const authRoutes = require('./routes/auth');
+  app.use('/auth', authRoutes);
+  
+  // Start server immediately
+  const PORT = process.env.PORT || 8080;
+  app.listen(PORT, () => {
+    console.log(`✅ Auth Service HTTP server running on port ${PORT}`);
+  });
+  
+  // Initialize database in background
+  initializeDatabaseAsync();
+}
+
+startServer();
