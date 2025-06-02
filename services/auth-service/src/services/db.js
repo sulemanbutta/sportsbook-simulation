@@ -1,7 +1,7 @@
 require("dotenv").config();
 const buildTimestamp = process.env.BUILD_TIMESTAMP || 'unknown';
 const commitSha = process.env.COMMIT_SHA || 'unknown';
-console.log(`▶️ [auth db.js] Auth DB Code Version: JUNE1_V1`);
+console.log(`▶️ [auth db.js] Auth DB Code Version: JUNE1_V2`);
 console.log(`▶️ [auth db.js] Build: ${buildTimestamp}`);
 console.log(`▶️ [auth db.js] Commit: ${commitSha}`);
 console.log(`▶️ [auth db.js] K_SERVICE: ${process.env.K_SERVICE}`);
@@ -16,21 +16,12 @@ const dbUser = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
 const dbName = process.env.DB_NAME;
 
-console.log(`▶️ [auth db.js] Connecting to Cloud SQL instance via Unix socket: /cloudsql/${instanceConnectionName}`);
 const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
-  
   dialect: "postgres",
   host: process.env.DB_HOST,
   port: 5432,  
   dialectOptions: {},
   logging: console.log, 
-/*
-    dialect: "postgres",
-    dialectOptions: {
-      socketPath: `/cloudsql/${instanceConnectionName}`
-    },
-    logging: console.log,
-    */
   });
 
 // Add retry logic for more resilient connections
