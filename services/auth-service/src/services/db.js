@@ -10,66 +10,56 @@ console.log(`▶️ [auth db.js] Environment: ${isCloudRun ? 'Cloud Run' : 'Loca
 
 let sequelize;
 
+// Async initialization function
 async function initializeDatabase() {
+  if (sequelize) {
+    console.log(`▶️ [auth db.js] Database already initialized`);
+    return sequelize;
+  }
+
   if (isCloudRun) {
     console.log(`▶️ [auth db.js] Initializing Cloud SQL Connector...`);
     
-    try {
-      const connector = new Connector();
-      
-      console.log(`▶️ [auth db.js] Getting connection options...`);
-      const clientOpts = await connector.getOptions({
-        instanceConnectionName: 'sportsbook-simulation:us-central1:sportsbook-instance',
-        ipType: 'PUBLIC',
-      });
-      
-      console.log(`▶️ [auth db.js] Client options received:`, Object.keys(clientOpts));
-      
-      sequelize = new Sequelize(dbName, dbUser, dbPassword, {
-        dialect: 'postgres',
-        logging: false, // Disable SQL logging for security
-        dialectOptions: clientOpts,
-        pool: {
-          max: 5,
-          min: 0,
-          acquire: 30000,
-          idle: 10000,
-        }
-      });
-      
-      console.log(`▶️ [auth db.js] Sequelize instance created with Cloud SQL Connector`);
-      
-    } catch (error) {
-      console.error(`❌ [auth db.js] Error setting up Cloud SQL Connector:`, error);
-      throw error;
-    }
+    const connector = new Connector();
+    const clientOpts = await connector.getOptions({
+      instanceConnectionName: 'sportsbook-simulation:us-central1:sportsbook-instance',
+      ipType: 'PUBLIC',
+    });
+    
+    console.log(`▶️ [auth db.js] Connection options ready`);
+    
+    sequelize = new Sequelize(dbName, dbUser, dbPassword, {
+      dialect: 'postgres',
+      logging: false, // Security fix: no SQL in logs
+      dialectOptions: clientOpts,
+      pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000,
+      }
+    });
     
   } else {
     // Local development
-    if (config.use_env_variable) {
-      sequelize = new Sequelize(process.env[config.use_env_variable], config);
-    } else {
-      sequelize = new Sequelize(config.database, config.username, config.password, config);
-    }
-    
-    console.log(`▶️ [auth db.js] Using local connection`);
+    console.log(`▶️ [auth db.js] Initializing local connection`);
+    sequelize = new Sequelize(dbName, dbUser, dbPassword, {
+      dialect: "postgres",
+      host: "localhost",
+      port: 5432,
+      logging: console.log,
+    });
   }
 
   // Test connection
   console.log(`▶️ [auth db.js] Testing connection...`);
-  try {
-    await sequelize.authenticate();
-    console.log("✅ Database connection successful!");
-    
-    await sequelize.sync({ alter: true });
-    console.log("✅ Models synchronized!");
-  } catch (err) {
-    console.error("❌ Database connection failed:", err.message);
-    throw err;
-  }
+  await sequelize.authenticate();
+  console.log("✅ Database connection successful!");
+  
+  await sequelize.sync({ alter: true });
+  console.log("✅ Models synchronized!");
+
+  return sequelize;
 }
 
-// Initialize the database connection
-initializeDatabase().catch(console.error);
-
-module.exports = sequelize;
+module.exports = { initializeDatabase };
