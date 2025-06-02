@@ -9,7 +9,7 @@ const basename = path.basename(__filename);
 //const config = require(__dirname + '/../../config/config.json')[env];
 const db = {};
 
-const sequelize = require("../../services/db"); 
+const sequelize = require("../services/db"); 
 
 console.log("▶️ [models/index.js] Using existing database connection");
 console.log("▶️ [models/index.js] Loading models...");
