@@ -35,8 +35,9 @@ if (isCloudRun && instanceConnectionName) {
   
   sequelize = new Sequelize(dbName, dbUser, dbPassword, {
     dialect: "postgres",
+    host: socketPath, 
     dialectOptions: {
-      socketPath: socketPath
+
     },
     logging: (sql) => {
       console.log(`[SQL Query]: ${sql}`);
