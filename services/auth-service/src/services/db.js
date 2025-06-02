@@ -1,14 +1,3 @@
-require("dotenv").config();
-const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/../../config/config.json')[env];
-const buildTimestamp = process.env.BUILD_TIMESTAMP || process.env.BUILD_ID || 'unknown';
-const commitSha = process.env.COMMIT_SHA || 'unknown';
-console.log(`▶️ [auth db.js] Auth DB Code Version: SECURE_DIRECT_IP_V7`);
-console.log(`▶️ [auth db.js] Build: ${buildTimestamp}`);
-console.log(`▶️ [auth db.js] Commit: ${commitSha}`);
-
-
-
 const { Sequelize } = require("sequelize");
 const { Connector } = require('@google-cloud/cloud-sql-connector');
 
@@ -17,29 +6,44 @@ const dbUser = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
 const dbName = process.env.DB_NAME;
 
+console.log(`▶️ [auth db.js] Environment: ${isCloudRun ? 'Cloud Run' : 'Local'}`);
+console.log(`▶️ [auth db.js] DB_USER: ${dbUser}`);
+console.log(`▶️ [auth db.js] DB_NAME: ${dbName}`);
+
 let sequelize;
 
 if (isCloudRun) {
-
-  const connector = new Connector();
-  const clientOpts = connector.getOptions({
-    instanceConnectionName: 'sportsbook-simulation:us-central1:sportsbook-instance',
-    ipType: 'PUBLIC',
-  });
-
-  sequelize = new Sequelize(dbName, dbUser, dbPassword, {
-    dialect: 'postgres',
-    logging: false, // Disable SQL logging for security
-    dialectOptions: clientOpts,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000,
-    }
-  });
+  console.log(`▶️ [auth db.js] Initializing Cloud SQL Connector...`);
   
-  console.log(`▶️ [auth db.js] Using Cloud SQL Connector`);
+  try {
+    const connector = new Connector();
+    
+    console.log(`▶️ [auth db.js] Getting connection options...`);
+    const clientOpts = connector.getOptions({
+      instanceConnectionName: 'sportsbook-simulation:us-central1:sportsbook-instance',
+      ipType: 'PUBLIC',
+    });
+    
+    console.log(`▶️ [auth db.js] Client options:`, clientOpts);
+    
+    sequelize = new Sequelize(dbName, dbUser, dbPassword, {
+      dialect: 'postgres',
+      logging: console.log, // Enable logging temporarily to debug
+      dialectOptions: clientOpts,
+      pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000,
+      }
+    });
+    
+    console.log(`▶️ [auth db.js] Sequelize instance created with Cloud SQL Connector`);
+    
+  } catch (error) {
+    console.error(`❌ [auth db.js] Error setting up Cloud SQL Connector:`, error);
+    throw error;
+  }
   
 } else {
   // Local development
@@ -51,7 +55,8 @@ if (isCloudRun) {
   }
 }
 
-// Connection test
+// Connection test with detailed error info
+console.log(`▶️ [auth db.js] Testing connection...`);
 sequelize.authenticate()
   .then(() => {
     console.log("✅ Database connection successful!");
@@ -61,8 +66,11 @@ sequelize.authenticate()
     console.log("✅ Models synchronized!");
   })
   .catch(err => {
-    console.error("❌ Database connection failed:", err.message);
+    console.error("❌ Database connection failed:");
+    console.error("Error message:", err.message);
+    console.error("Error code:", err.code);
+    console.error("Error syscall:", err.syscall);
+    console.error("Full error:", err);
   });
-
 
 module.exports = sequelize;
