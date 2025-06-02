@@ -20,11 +20,11 @@ const dbHost = process.env.DB_HOST || "34.172.127.125";
 console.log(`▶️ [auth db.js] DB_HOST: ${dbHost}`);
 console.log(`▶️ [auth db.js] DB_NAME: ${dbName}`);
 console.log(`▶️ [auth db.js] DB_USER: ${dbUser}`);
-console.log(`▶️ [auth db.js] Using SECURE direct IP connection with SSL`);
 
 let sequelize;
 
 if (isCloudRun) {
+  console.log(`▶️ [auth db.js] Using SECURE direct IP connection with SSL`);
   // Enhanced secure configuration for direct IP connection
   sequelize = new Sequelize(dbName, dbUser, dbPassword, {
     dialect: "postgres",

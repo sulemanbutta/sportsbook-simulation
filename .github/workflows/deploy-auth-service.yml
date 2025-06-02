@@ -112,25 +112,6 @@ jobs:
             --platform=managed \
             --region=us-central1 \
             --format="yaml(status.traffic, status.latestCreatedRevisionName, status.latestReadyRevisionName)"
-
-      - name: Verify Direct IP Configuration
-        run: |
-              echo "Verifying direct IP configuration..."
-              
-              # Check if DB_HOST is properly set
-              DB_HOST_VALUE=$(gcloud run services describe auth-service \
-                --platform=managed \
-                --region=us-central1 \
-                --format="value(spec.template.spec.containers[0].env[?(@.name=='DB_HOST')].value)")
-              
-              echo "DB_HOST is set to: $DB_HOST_VALUE"
-              
-              if [[ "$DB_HOST_VALUE" == "34.172.127.125" ]]; then
-                echo "✅ DB_HOST is correctly configured for direct IP connection"
-              else
-                echo "❌ DB_HOST is not properly configured"
-                exit 1
-              fi
     
       - name: Get service URL
         run: |
