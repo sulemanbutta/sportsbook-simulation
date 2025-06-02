@@ -95,14 +95,7 @@ jobs:
             --region=us-central1 \
             --allow-unauthenticated \
             --add-cloudsql-instances=sportsbook-simulation:us-central1:sportsbook-instance \
-            --set-env-vars=JWT_SECRET=${{ secrets.JWT_SECRET }} \
-
-            --set-env-vars=DB_NAME=sportsbook_db \
-            --set-env-vars=DB_USER=sportsbook_user \
-            --set-env-vars=DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-            --set-env-vars=DB_INSTANCE_CONNECTION_NAME=sportsbook-simulation:us-central1:sportsbook-instance \
-            --set-env-vars="BUILD_ID=${DEPLOY_TIMESTAMP}" \
-            --set-env-vars="COMMIT_SHA=${{ github.sha }}" \
+            --set-env-vars=JWT_SECRET=${{ secrets.JWT_SECRET }},DB_HOST=${{ secrets.DB_HOST }},DB_NAME=sportsbook_db,DB_USER=sportsbook_user,DB_PASSWORD=${{ secrets.DB_PASSWORD }},DB_INSTANCE_CONNECTION_NAME=sportsbook-simulation:us-central1:sportsbook-instance,BUILD_ID=${DEPLOY_TIMESTAMP},COMMIT_SHA=${{ github.sha }} \
             --service-account=github-actions-deployer@sportsbook-simulation.iam.gserviceaccount.com
 
       - name: Verify traffic routing
