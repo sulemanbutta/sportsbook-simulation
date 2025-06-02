@@ -96,6 +96,7 @@ jobs:
             --allow-unauthenticated \
             --add-cloudsql-instances=sportsbook-simulation:us-central1:sportsbook-instance \
             --set-env-vars=JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            --set-env-vars=DB_HOST=${{ secrets.JWT_SECRET }} \
             --set-env-vars=DB_NAME=sportsbook_db \
             --set-env-vars=DB_USER=sportsbook_user \
             --set-env-vars=DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
@@ -112,40 +113,27 @@ jobs:
             --region=us-central1 \
             --format="yaml(status.traffic, status.latestCreatedRevisionName, status.latestReadyRevisionName)"
 
-            - name: Verify Socket Path Configuration
-            run: |
-              echo "Verifying Cloud SQL socket path configuration..."
+      - name: Verify Direct IP Configuration
+        run: |
+              echo "Verifying direct IP configuration..."
               
-              # Check if Cloud SQL instance is attached
-              ATTACHED_INSTANCES=$(gcloud run services describe auth-service \
-                --platform=managed \
-                --region=us-central1 \
-                --format="value(spec.template.metadata.annotations['run.googleapis.com/cloudsql-instances'])")
-              
-              echo "Attached Cloud SQL instances: $ATTACHED_INSTANCES"
-              
-              if [[ "$ATTACHED_INSTANCES" == *"sportsbook-simulation:us-central1:sportsbook-instance"* ]]; then
-                echo "✅ Cloud SQL instance is properly attached for socket path connection"
-              else
-                echo "❌ Cloud SQL instance is NOT attached properly"
-                exit 1
-              fi
-              
-              # Verify DB_HOST is NOT set (would conflict with socket path)
-              DB_HOST_SET=$(gcloud run services describe auth-service \
+              # Check if DB_HOST is properly set
+              DB_HOST_VALUE=$(gcloud run services describe auth-service \
                 --platform=managed \
                 --region=us-central1 \
                 --format="value(spec.template.spec.containers[0].env[?(@.name=='DB_HOST')].value)")
               
-              if [[ -z "$DB_HOST_SET" ]]; then
-                echo "✅ DB_HOST is not set (correct for socket path connection)"
+              echo "DB_HOST is set to: $DB_HOST_VALUE"
+              
+              if [[ "$DB_HOST_VALUE" == "34.172.127.125" ]]; then
+                echo "✅ DB_HOST is correctly configured for direct IP connection"
               else
-                echo "❌ DB_HOST is set to: $DB_HOST_SET (this will conflict with socket path)"
+                echo "❌ DB_HOST is not properly configured"
                 exit 1
               fi
     
-          - name: Get service URL
-            run: |
+      - name: Get service URL
+        run: |
               SERVICE_URL=$(gcloud run services describe auth-service --platform managed --region us-central1 --format 'value(status.url)')
               echo "Service URL: $SERVICE_URL"
-              echo "Deployment complete. Monitor logs for socket path connection success."
+              echo "Deployment complete. Monitor logs for secure SSL connection success."
