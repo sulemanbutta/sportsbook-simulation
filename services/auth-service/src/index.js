@@ -3,7 +3,7 @@ console.log("▶️ [index.js] Starting Auth Service");
 const express = require("express");
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
-const { initializeDatabase } = require('./config/db'); // Updated path
+const { initializeDatabase } = require('./services/db'); // Updated path
 const { loadModels } = require('./models'); 
 
 async function startServer() {
