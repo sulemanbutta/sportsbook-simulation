@@ -18,10 +18,15 @@ const dbName = process.env.DB_NAME;
 
 const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
   dialect: "postgres",
-  host: process.env.DB_HOST,
-  port: 5432,  
-  dialectOptions: {},
-  logging: console.log, 
+  host: "127.0.0.1",
+  port: 5432,
+  logging: console.log,
+  pool: {
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000
+  }
   });
 
 // Add retry logic for more resilient connections
