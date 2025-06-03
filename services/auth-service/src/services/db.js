@@ -46,7 +46,7 @@ async function initializeDatabase() {
       
     } catch (proxyError) {
       console.error(`❌ [auth db.js] Cloud SQL Proxy failed: ${proxyError.message}`);
-      console.error("Full error:", err);
+      console.error("Full error:", proxyError);
       console.log(`▶️ [auth db.js] Falling back to direct IP connection...`);
       
       // Fallback to direct IP
