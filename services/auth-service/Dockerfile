@@ -16,6 +16,9 @@ ENV COMMIT_SHA=${COMMIT_SHA}
 
 #ENV PORT = ${PORT}
 
+# Install dependencies needed for Cloud SQL Proxy
+RUN apk add --no-cache curl bash
+
 # Copy package.json and install dependencies
 #COPY package.json ./
 #RUN npm install
@@ -39,7 +42,7 @@ EXPOSE 8080
 # Start the service
 # CMD ["npm", "start"]
 # Install Cloud SQL Proxy
-RUN wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy && \
+RUN curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 && \
     chmod +x cloud_sql_proxy && \
     mv cloud_sql_proxy /usr/local/bin/
 

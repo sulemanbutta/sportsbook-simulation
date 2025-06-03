@@ -47,10 +47,13 @@ jobs:
           echo ".env" >> .dockerignore
           echo "npm-debug.log" >> .dockerignore
 
-      - name: Debug - List files to be included in build
+      - name: Debug - List files in build context
+        working-directory: ./services/auth-service
         run: |
-          echo "Files in auth-service directory:"
-          find services/auth-service -type f | grep -v "node_modules" | sort
+          echo "Files in build context:"
+          ls -la
+          echo "Contents of start.sh:"
+          cat start.sh || echo "start.sh not found"
 
       - name: Build and push Docker image
         id: build_image
