@@ -2,8 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-//const { User } = require("../models");
-const { User } = req.db;
+const { User } = require("../models");
 
 const router = express.Router();
 
@@ -59,6 +58,7 @@ router.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body;
         // Find user by email
+        const { User } = req.db;
         const user = await User.findOne({ where: { email }});
         console.log("user:", user)
 
