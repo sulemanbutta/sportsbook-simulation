@@ -96,7 +96,8 @@ jobs:
             --allow-unauthenticated \
             --set-cloudsql-instances=sportsbook-simulation:us-central1:sportsbook-instance \
             --set-env-vars=JWT_SECRET=${{ secrets.JWT_SECRET }},DB_NAME=sportsbook_db,DB_USER=sportsbook_user,DB_PASSWORD=${{ secrets.DB_PASSWORD }},DB_INSTANCE_CONNECTION_NAME=sportsbook-simulation:us-central1:sportsbook-instance,BUILD_ID=${DEPLOY_TIMESTAMP},COMMIT_SHA=${{ github.sha }},CLOUDSQL_INSTANCES=sportsbook-simulation:us-central1:sportsbook-instance \
-            
+            --service-account=389844181341-compute@developer.gserviceaccount.com
+
       - name: Verify traffic routing
         run: |
           echo "Verifying traffic routing to new revision..."
