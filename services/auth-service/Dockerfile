@@ -17,7 +17,7 @@ ENV COMMIT_SHA=${COMMIT_SHA}
 #ENV PORT = ${PORT}
 
 # Install dependencies needed for Cloud SQL Proxy
-RUN apk add --no-cache curl bash
+RUN apk add --no-cache curl bash netcat-openbsd
 
 # Copy package.json and install dependencies
 #COPY package.json ./
