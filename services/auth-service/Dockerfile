@@ -42,9 +42,10 @@ EXPOSE 8080
 # Start the service
 # CMD ["npm", "start"]
 # Install Cloud SQL Proxy
-RUN curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 && \
-    chmod +x cloud_sql_proxy && \
-    mv cloud_sql_proxy /usr/local/bin/
+# Download Cloud SQL Proxy v2 (better certificate handling)
+RUN curl -o cloud-sql-proxy https://dl.google.com/cloud-sql-connectors/cloud-sql-proxy/v2.8.0/cloud-sql-proxy.linux.amd64 && \
+    chmod +x cloud-sql-proxy && \
+    mv cloud-sql-proxy /usr/local/bin/
 
 # Copy startup script
 COPY start.sh /start.sh
