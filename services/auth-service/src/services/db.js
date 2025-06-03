@@ -33,10 +33,15 @@ async function initializeDatabase() {
       logging: false, // Security fix: no SQL in logs
       dialectOptions: clientOpts,
       pool: {
-        max: 5,
-        min: 0,
-        acquire: 30000,
-        idle: 10000,
+        max: 3,        // Reduced from 5
+        min: 1,        // Increased from 0 - keep connection alive
+        acquire: 15000, // Reduced from 30000
+        idle: 300000,   // 5 minutes
+        evict: 1000,
+      },
+      retry: {
+        max: 2,        // Reduced retries
+        timeout: 10000 // Faster timeout
       }
     });
     
