@@ -37,4 +37,15 @@ RUN echo "Building auth-service version: ${BUILD_TIMESTAMP}" && \
 EXPOSE 8080
 
 # Start the service
-CMD ["npm", "start"]
+# CMD ["npm", "start"]
+# Install Cloud SQL Proxy
+RUN wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy && \
+    chmod +x cloud_sql_proxy && \
+    mv cloud_sql_proxy /usr/local/bin/
+
+# Copy startup script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Use startup script instead of npm start
+CMD ["/start.sh"]
