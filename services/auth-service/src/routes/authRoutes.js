@@ -29,7 +29,7 @@ const authenticate = async (req, res, next) => {
 router.post("/register", async (req, res) => {
     try {
         const { username, email, password } = req.body;
-
+        const { User } = req.db;
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             return res.status(400).json({ message: "Email is alread in user" });
@@ -89,6 +89,7 @@ router.post("/login", async (req, res) => {
 router.get("/account", authenticate, async (req, res) => {
     console.log(req)
     try {
+        const { User } = req.db;
       const user = await User.findByPk(req.user.sub, {
         attributes: ['user_id', 'email', 'username', 'created_at'],
       })
@@ -102,6 +103,7 @@ router.get("/account", authenticate, async (req, res) => {
 
 router.get("/balance", authenticate, async (req, res) => {
     try {
+        const { User } = req.db;
         const user = await User.findByPk(req.user.sub);
         res.json({ balance: user.balance });
     } catch (error) {
@@ -115,6 +117,7 @@ router.post("/deposit", authenticate, async (req, res) => {
     console.log(req.user)
     try {
         const { amount } = req.body;
+        const { User } = req.db;
         const user = await User.findByPk(req.user.sub);
         if (amount <= 0) return res.status(400).json({ error: "Invalid deposit amount" });
         await user.update({ balance: user.balance + amount });
@@ -127,6 +130,7 @@ router.post("/deposit", authenticate, async (req, res) => {
 
 router.post("/withdraw", authenticate, async (req, res) => {
     const { amount } = req.body;
+    const { User } = req.db;
     const user = await User.findByPk(req.user.sub);
 
     if (amount <= 0 || user.balance < amount) {
@@ -141,6 +145,7 @@ router.post("/withdraw", authenticate, async (req, res) => {
 router.post('/change-password', authenticate, async (req, res) => {
     const { currentPassword, newPassword } = req.body
     try {
+        const { User } = req.db;
       const user = await User.findByPk(req.user.sub)
       if (!user) {
         return res.status(404).json({ message: 'User not found.' })
