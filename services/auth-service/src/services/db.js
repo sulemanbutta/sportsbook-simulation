@@ -1,5 +1,5 @@
 const { Sequelize } = require("sequelize");
-
+console.log("test1")
 const isCloudRun = !!process.env.K_SERVICE;
 const dbUser = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
