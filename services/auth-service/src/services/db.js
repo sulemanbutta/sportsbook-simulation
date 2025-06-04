@@ -1,9 +1,10 @@
 const { Sequelize } = require("sequelize");
-console.log("test1")
+
 const isCloudRun = !!process.env.K_SERVICE;
 const dbUser = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
 const dbName = process.env.DB_NAME;
+const dbHost = "34.172.127.125"; // Your Cloud SQL IP
 
 console.log(`▶️ [auth db.js] Environment: ${isCloudRun ? 'Cloud Run' : 'Local'}`);
 
@@ -15,53 +16,26 @@ async function initializeDatabase() {
   }
 
   if (isCloudRun) {
-    // Try Cloud SQL Proxy first
-    try {
-      console.log(`▶️ [auth db.js] Attempting Cloud SQL Proxy connection...`);
-      
-      sequelize = new Sequelize(dbName, dbUser, dbPassword, {
-        dialect: 'postgres',
-        host: 'localhost',
-        port: 5432,
-        logging: false,
-        pool: {
-          max: 5,
-          min: 1,
-          acquire: 30000,
-          idle: 300000,
+    console.log(`▶️ [auth db.js] Connecting to Cloud SQL via direct IP...`);
+    
+    sequelize = new Sequelize(dbName, dbUser, dbPassword, {
+      dialect: "postgres",
+      host: dbHost,
+      port: 5432,
+      logging: false, // Security: no SQL queries in logs
+      dialectOptions: {
+        ssl: {
+          require: false,
+          rejectUnauthorized: false
         }
-      });
-      
-      await sequelize.authenticate();
-      console.log(`✅ [auth db.js] Cloud SQL Proxy connection successful!`);
-      
-    } catch (proxyError) {
-      console.log(`⚠️ [auth db.js] Proxy failed: ${proxyError}`);
-      console.log(`▶️ [auth db.js] Falling back to direct IP...`);
-      
-      // Fallback to direct IP
-      sequelize = new Sequelize(dbName, dbUser, dbPassword, {
-        dialect: "postgres",
-        host: "34.172.127.125",
-        port: 5432,
-        logging: false,
-        dialectOptions: {
-          ssl: {
-            require: false,
-            rejectUnauthorized: false
-          }
-        },
-        pool: {
-          max: 5,
-          min: 0,
-          acquire: 30000,
-          idle: 10000,
-        }
-      });
-      
-      await sequelize.authenticate();
-      console.log("✅ [auth db.js] Direct IP connection successful!");
-    }
+      },
+      pool: {
+        max: 5,
+        min: 1,
+        acquire: 30000,
+        idle: 300000,
+      }
+    });
     
   } else {
     // Local development
@@ -71,12 +45,14 @@ async function initializeDatabase() {
       port: 5432,
       logging: console.log,
     });
-    
-    await sequelize.authenticate();
   }
 
+  console.log(`▶️ [auth db.js] Testing connection...`);
+  await sequelize.authenticate();
+  console.log("✅ [auth db.js] Database connection successful!");
+  
   await sequelize.sync({ alter: true });
-  console.log("✅ Models synchronized!");
+  console.log("✅ [auth db.js] Models synchronized!");
 
   return sequelize;
 }
