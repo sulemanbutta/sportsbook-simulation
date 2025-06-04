@@ -42,8 +42,7 @@ EXPOSE 8080
 # Start the service
 # CMD ["npm", "start"]
 # Install Cloud SQL Proxy
-# Download Cloud SQL Proxy v2 (better certificate handling)
-RUN curl -L -o cloud-sql-proxy https://github.com/GoogleCloudPlatform/cloud-sql-proxy/releases/download/v2.8.0/cloud-sql-proxy.linux.amd64 && \
+RUN curl -o cloud-sql-proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 && \
     chmod +x cloud-sql-proxy && \
     mv cloud-sql-proxy /usr/local/bin/
 

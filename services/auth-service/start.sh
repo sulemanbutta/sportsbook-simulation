@@ -10,32 +10,34 @@ check_proxy_ready() {
 
 # Check if we should start Cloud SQL Proxy
 if [ ! -z "$K_SERVICE" ] && [ ! -z "$CLOUDSQL_INSTANCES" ]; then
-    echo "🔗 Cloud Run detected - starting Cloud SQL Proxy v2"
+    echo "🔗 Cloud Run detected - starting Cloud SQL Proxy v1"
     echo "📋 Instance: $CLOUDSQL_INSTANCES"
     
-    # Start Cloud SQL Proxy v2 (much better certificate handling)
-    echo "▶️ Starting Cloud SQL Proxy v2..."
+    # Start Cloud SQL Proxy v1
+    echo "▶️ Starting Cloud SQL Proxy v1..."
     /usr/local/bin/cloud-sql-proxy \
-        --port 5432 \
-        --address 0.0.0.0 \
-        $CLOUDSQL_INSTANCES &
+        -instances=$CLOUDSQL_INSTANCES=tcp:0.0.0.0:5432 \
+        -term_timeout=30s \
+        -verbose &
     
     PROXY_PID=$!
-    echo "✅ Cloud SQL Proxy v2 started with PID: $PROXY_PID"
+    echo "✅ Cloud SQL Proxy v1 started with PID: $PROXY_PID"
     
-    # Wait for proxy to be ready
-    echo "⏳ Waiting for proxy to be ready..."
-    for i in {1..30}; do
+    # Wait longer for certificates to generate
+    echo "⏳ Waiting for proxy to be ready (certificates may take 30-60 seconds)..."
+    for i in {1..60}; do
         if check_proxy_ready; then
-            echo "✅ Cloud SQL Proxy v2 is ready!"
+            echo "✅ Cloud SQL Proxy is ready!"
             break
         fi
         
-        if [ $i -eq 30 ]; then
-            echo "❌ Proxy not ready after 30 seconds"
+        if [ $i -eq 60 ]; then
+            echo "❌ Proxy not ready after 60 seconds"
             echo "⚠️ Continuing anyway - app will try to connect"
         else
-            echo "⏳ Attempt $i/30..."
+            if [ $((i % 15)) -eq 0 ]; then
+                echo "⏳ Still waiting... ($i/60) - certificates generating"
+            fi
             sleep 1
         fi
     done
