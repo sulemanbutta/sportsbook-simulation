@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const settlmentRoutes = require("./routes/settlmentRoutes");
+const settlementRoutes = require("./routes/settlementRoutes");
 const { initializeDatabase } = require('./services/db');
 const { loadModels } = require('./models');
 
@@ -60,7 +60,7 @@ function startServer() {
   });
   
   // Database-dependent routes with readiness check
-  app.use('/settlment', (req, res, next) => {
+  app.use('/settlement', (req, res, next) => {
     if (!dbReady) {
       if (dbError) {
         return res.status(503).json({ 
@@ -80,7 +80,7 @@ function startServer() {
   });
   
   // Auth routes
-  app.use("/settlment", settlmentRoutes);
+  app.use("/settlement", settlementRoutes);
   
   // Start server immediately
   const PORT = process.env.PORT || 8080;
