@@ -60,8 +60,6 @@ const loading = ref(true)
 async function fetchBetHistory() {
   loading.value = true
   try {
-
-    //const res = await axios.get('http://localhost:4001/betting/mybets', {
     const BETTING_API = import.meta.env.VITE_BETTING_API_URL;
     const res = await axios.get(`${BETTING_API}/betting/mybets`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },

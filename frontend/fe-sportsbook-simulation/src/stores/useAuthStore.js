@@ -20,8 +20,8 @@ export const useAuthStore = defineStore('auth', {
     },
     async login({ email, password }) {
       console.log(email, password)
-      // const res = await axios.post('http://localhost:4000/auth/login', { email, password })
       const AUTH_API = import.meta.env.VITE_AUTH_API_URL;
+      console.log("AUTH_API: ", AUTH_API)
       const res =  await axios.post(`${AUTH_API}/auth/login`, { email, password });
       console.log('res:', res)
       this.token = res.data.token
@@ -29,7 +29,6 @@ export const useAuthStore = defineStore('auth', {
       await this.fetchUser()
     },
     async signup({ username, email, password }) {
-      //const res = await axios.post('http://localhost:4000/auth/register', {
       try {
         const AUTH_API = import.meta.env.VITE_AUTH_API_URL;
         const res = await axios.post(`${AUTH_API}/auth/register`, {
@@ -47,7 +46,6 @@ export const useAuthStore = defineStore('auth', {
     async fetchUser() {
       if (!this.token) return
       try {
-        //const res = await axios.get('http://localhost:4000/auth/account', {
         const AUTH_API = import.meta.env.VITE_AUTH_API_URL;
         const res = await axios.get(`${AUTH_API}/auth/account`, {
           headers: {

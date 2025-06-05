@@ -5,7 +5,7 @@ const bettingRoutes = require("./routes/bettingRoutes");
 const sequelize = require("./services/db");
 
 const app = express();
-const allowed = [ 'https://sportsbook-simulation.web.app', 'https://sportsbook-simulation.firebaseapp.com' ];
+const allowed = [ 'https://sportsbook-simulation.web.app', 'https://sportsbook-simulation.firebaseapp.com', 'http://localhost:5173'];
 
 // Middleware
 app.use(express.json());

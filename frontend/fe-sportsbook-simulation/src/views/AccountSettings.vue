@@ -39,7 +39,6 @@ const updatePassword = async () => {
   try {
     const AUTH_API = import.meta.env.VITE_AUTH_API_URL;
     const res = await axios.post(
-      //'http://localhost:4000/auth/change-password',
       `${AUTH_API}/auth/change-password`,
       {
         currentPassword: currentPassword.value,

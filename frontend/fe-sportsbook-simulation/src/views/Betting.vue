@@ -32,7 +32,6 @@ const fetchGames = async () => {
   console.log('pollingAllGames:', countRefetch.value, ' ', currentTime)
 
   try {
-    //const response = await axios.get('http://localhost:4001/betting/games')
     const BETTING_API = import.meta.env.VITE_BETTING_API_URL;
     const response = await axios.get(`${BETTING_API}/betting/games`)
     allGames.value = response.data
