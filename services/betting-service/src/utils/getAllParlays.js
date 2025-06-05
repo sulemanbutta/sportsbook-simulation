@@ -1,11 +1,11 @@
 const { ParlayLeg, Parlay } = require('../models');
 
-async function getAllParlays(user_id) {
+async function getAllParlays(req) {
   try {
     const { Parlay } = req.db;
     const parlays = await Parlay.findAll({
       where: {
-        user_id: user_id,
+        user_id: req.user.sub,
       },
       include: [
         {

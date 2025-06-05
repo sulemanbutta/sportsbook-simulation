@@ -43,5 +43,4 @@ jobs:
             --platform=managed \
             --region=${{ secrets.GCP_REGION }} \
             --allow-unauthenticated \
-            --add-cloudsql-instances=${{ secrets.CLOUDSQL_INSTANCE }} \
             --set-env-vars='BETTING_PORT=${{ secrets.BETTING_PORT }},JWT_SECRET=${{ secrets.JWT_SECRET }},ODDS_API_KEY=${{ secrets.ODDS_API_KEY }},ODDS_API_NBA_ODDS_URL=${{ secrets.ODDS_API_NBA_ODDS_URL }},ODDS_API_NHL_ODDS_URL=${{ secrets.ODDS_API_NHL_ODDS_URL }},ODDS_API_MLB_ODDS_URL=${{ secrets.ODDS_API_MLB_ODDS_URL }},ESPN_API_NBA_SCOREBOARD=${{ secrets.ESPN_API_NBA_SCOREBOARD }},ESPN_API_NHL_SCOREBOARD=${{ secrets.ESPN_API_NHL_SCOREBOARD }},ESPN_API_MLB_SCOREBOARD=${{ secrets.ESPN_API_MLB_SCOREBOARD }},DB_HOST=${{ secrets.DB_HOST }},DB_NAME=${{ secrets.DB_NAME }},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},DB_PORT=${{ secrets.DB_PORT }},CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }}'

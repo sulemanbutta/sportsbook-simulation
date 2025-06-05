@@ -142,7 +142,7 @@ router.get("/mybets", authenticate, async (req, res) => {
     try {
         const { Bet } = req.db;
         const bets = await Bet.findAll({ where: { user_id: req.user.sub } });
-        const parlays = await getAllParlays(req.user.sub)
+        const parlays = await getAllParlays(req)
         const wagers = [...bets, ...parlays]
         res.json(wagers);
     } catch (error) {
