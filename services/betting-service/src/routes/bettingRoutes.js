@@ -63,6 +63,7 @@ function calculateParlay(bets, stake) {
 router.post('/bet', authenticate, async (req, res) => {
     const { isParlay, stake, bets } = req.body
     const user_id = req.user.sub;
+    const { User } = req.db;
     const user = await User.findByPk(req.user.sub);
     
     if (typeof isParlay === 'undefined' || !stake || bets.length < 1) {
@@ -77,6 +78,7 @@ router.post('/bet', authenticate, async (req, res) => {
         const { payout, odds } = calculateParlay(bets, stake);
         try {
             await user.update({ balance: user.balance - stake });
+            const { Parlay } = req.db;
             const parlay = await Parlay.create({
             user_id,
             odds: odds,
@@ -96,7 +98,7 @@ router.post('/bet', authenticate, async (req, res) => {
             odds: leg.odds,
             status: 'PENDING',
             }));
-    
+            const { ParlayLeg } = req.db;
             await ParlayLeg.bulkCreate(legInserts);
     
             res.status(201).json({ parlay_id: parlay.parlay_id, payout });
@@ -114,6 +116,7 @@ router.post('/bet', authenticate, async (req, res) => {
         const commence_time = new Date(commence_timeString)
         try {
             await user.update({ balance: user.balance - stake });
+            const { Bet } = req.db;
             const newBet = await Bet.create({
                 user_id,
                 event_id,
@@ -137,6 +140,7 @@ router.post('/bet', authenticate, async (req, res) => {
 
 router.get("/mybets", authenticate, async (req, res) => {
     try {
+        const { Bet } = req.db;
         const bets = await Bet.findAll({ where: { user_id: req.user.sub } });
         const parlays = await getAllParlays(req.user.sub)
         const wagers = [...bets, ...parlays]
