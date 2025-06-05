@@ -1,43 +1,59 @@
-require("dotenv").config();
 const { Sequelize } = require("sequelize");
- 
-const rawHost = process.env.DB_HOST;  // now the public IP
-const port    = process.env.DB_PORT || 5432;
+const env = process.env.NODE_ENV || 'development';
+const config = require(__dirname + '/../../config/config.json')[env];
+const isCloudRun = !!process.env.K_SERVICE;
+const dbUser = process.env.DB_USER;
+const dbPassword = process.env.DB_PASSWORD;
+const dbName = process.env.DB_NAME;
+const dbHost = process.env.DB_HOST;
 
-console.log("▶️ [db.js] Connecting via public IP:", rawHost, port);
+console.log(`▶️ [settlement db.js] Environment: ${isCloudRun ? 'Cloud Run' : 'Development'}`);
 
-console.log("▶️ [db.js] process.env.DB_HOST =", process.env.DB_HOST);
-console.log("▶️ [db.js] typeof DB_HOST =", typeof process.env.DB_HOST);
+let sequelize;
 
+async function initializeDatabase() {
+  if (sequelize) {
+    return sequelize;
+  }
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
-  {
-    dialect: "postgres",
-    host: rawHost,
-    port,
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
+  if (isCloudRun) {
+    console.log(`▶️ [settlement db.js] Connecting to Cloud SQL via direct IP...`);
+    sequelize = new Sequelize(dbName, dbUser, dbPassword, {
+      dialect: "postgres",
+      host: dbHost,
+      port: 5432,
+      logging: false, // Security: no SQL queries in logs
+      dialectOptions: {
+        ssl: {
+          require: false,
+          rejectUnauthorized: false
+        }
+      },
+      pool: {
+        max: 5,
+        min: 1,
+        acquire: 30000,
+        idle: 300000,
       }
+    });
+    
+  } else {
+    // Local development
+    if (config.use_env_variable) {
+      sequelize = new Sequelize(process.env[config.use_env_variable], config);
+    } else {
+      sequelize = new Sequelize(config.database, config.username, config.password, config);
     }
   }
-);
 
-sequelize.authenticate()
-  .then(() => {
-    console.log("Database connection successful");
-    return sequelize.sync({ alter: true });
-  })
-  .then(() => {
-    console.log("All models were synchronized");
-  })
-  .catch((err) => {
-    console.error("DB init failed:", err);
-    // process.exit(1);
-  });
+  console.log(`▶️ [settlement db.js] Testing connection...`);
+  await sequelize.authenticate();
+  console.log("✅ [settlement db.js] Database connection successful!");
+  
+  await sequelize.sync({ alter: true });
+  console.log("✅ [settlement db.js] Models synchronized!");
 
-module.exports = sequelize;
+  return sequelize;
+}
+
+module.exports = { initializeDatabase };

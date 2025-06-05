@@ -1,10 +1,10 @@
 const { Op } = require('sequelize');
 const { Bet } = require('../models');
 
-async function getUnsettledBets() {
+async function getUnsettledBets(req) {
   try {
+    const { Bet } = req.db;
     const now = new Date();
-
     const unsettledBets = await Bet.findAll({
       where: {
         status: 'PENDING',

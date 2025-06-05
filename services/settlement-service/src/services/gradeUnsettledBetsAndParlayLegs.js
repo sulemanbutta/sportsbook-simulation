@@ -80,10 +80,11 @@ const gradeWager = (wager, scoreData) => {
     return { status: result };
 };
 
-async function gradeUnsettledBetsAndParlayLegs() {
+async function gradeUnsettledBetsAndParlayLegs(req) {
     try {
-        const unsettledBets =  await getUnsettledBets();
-        const unsettledLegs = await getUnsettledParlayLegs();
+        const { User, Bet, ParlayLeg, Parlay, sequelize } = req.db
+        const unsettledBets =  await getUnsettledBets(req);
+        const unsettledLegs = await getUnsettledParlayLegs(req);
         console.log("unsettledLegs:", unsettledLegs)
         const parlayIds = [...new Set(unsettledLegs.map(leg => leg.parlay_id))];
         console.log("parlayIds:", parlayIds)

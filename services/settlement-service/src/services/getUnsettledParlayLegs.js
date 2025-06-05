@@ -1,10 +1,11 @@
 const { Op } = require('sequelize');
 const { ParlayLeg, Parlay } = require('../models');
 
-async function getUnsettledParlayLegs() {
+async function getUnsettledParlayLegs(req) {
   try {
+    const { Parlay } = req.db;
+    const { ParlayLeg } = req.db;
     const now = new Date();
-
     const unsettledLegs = await ParlayLeg.findAll({
       where: {
         status: 'PENDING',
