@@ -4,6 +4,7 @@ const cors = require("cors");
 const settlementRoutes = require("./routes/settlementRoutes");
 const { initializeDatabase } = require('./services/db');
 const { loadModels } = require('./models');
+const { startPoller, initializePoller } = require('./poller');
 
 // Global state
 let db = null;
@@ -27,7 +28,7 @@ async function initializeDatabaseAsync() {
   }
 }
 
-function startServer() {
+async function startServer() {
   console.log('▶️ [index.js] Starting Auth Service');
   
   // Set up Express app immediately
@@ -90,7 +91,17 @@ function startServer() {
   
   // Initialize database in background
   initializeDatabaseAsync();
+
+  // For local development, start the poller
+  if (process.env.NODE_ENV == 'development') {
+    try {
+      await initializePoller();
+      startPoller();
+      console.log('✅ Local poller started');
+    } catch (error) {
+      console.error('❌ Failed to start poller:', error);
+    }
+  }  
 }
 
 startServer();
-//startPoller();

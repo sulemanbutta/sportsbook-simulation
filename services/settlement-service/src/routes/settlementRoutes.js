@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get("/unsettled-bets", async (req, res) => {
     try {
-      await gradeUnsettledBetsAndParlayLegs(req)
+      await gradeUnsettledBetsAndParlayLegs(req.db)
       res.json({ message: "Bets settled successfully" });
     } catch (error) {
       console.log("Error:", error)

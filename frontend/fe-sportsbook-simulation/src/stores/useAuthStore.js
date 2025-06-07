@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
+import { jwtDecode } from 'jwt-decode'
+
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -8,14 +10,32 @@ export const useAuthStore = defineStore('auth', {
   }),
 
   getters: {
-    isAuthenticated: (state) => !!state.token,
+    isAuthenticated: (state) => {
+      if (!state.token) return false
+      try {
+        const { exp } = jwtDecode(state.token)
+        return exp * 1000 > Date.now()
+      } catch {
+        return false
+      }
+    }
   },
 
   actions: {
     initializeAuth() {
       const token = localStorage.getItem('token')
       if (token) {
-        this.token = token
+        try {
+          const { exp } = jwtDecode(token)
+          if (exp * 1000 < Date.now()) {
+            this.logout()
+          } else {
+            this.token = token
+            this.fetchUser()
+          }
+        } catch {
+          this.logout()
+        }
       }
     },
     async login({ email, password }) {

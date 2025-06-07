@@ -42,7 +42,15 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore()
+
+  // initialize on page refresh if needed
+  if (!auth.token && localStorage.getItem('token')) {
+    auth.initializeAuth()
+  }
+
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
+    auth.logout()
+    localStorage.setItem('sessionExpired', 'true')
     next({ name: 'Home' })
   } else {
     next()

@@ -69,8 +69,9 @@ export const useBetslipStore = defineStore('betslip', {
         // Return success so component can respond
         return { success: true, data: response.data }
       } catch (err) {
-        console.error('Bet placement error:', err)
-        return { success: false, error: err }
+        console.error('Bet placementf error:', err, err.response.data.error)
+        console.log("test")
+        return { success: false, error: err, message: err.response.data.error}
       }
     },
   },

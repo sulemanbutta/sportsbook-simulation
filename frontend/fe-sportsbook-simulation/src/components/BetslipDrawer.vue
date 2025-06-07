@@ -4,6 +4,9 @@ import { useBetslipStore } from '@/stores/useBetslipStore'
 
 const store = useBetslipStore()
 const stake = ref(store.stake)
+const snackbar = ref(false)
+const snackbarText = ref('')
+const snackbarColor = ref('success')
 
 const payout = computed(() => {
   if (!store.stake || store.bets.length === 0) return 0
@@ -36,13 +39,16 @@ const combinedOdds = computed(() => {
 
 const handlePlaceBet = async () => {
   const result = await store.placeBet()
-  /*
-  if (result.success) {
-    // success feedback
+
+  if (result?.success) {
+    snackbarText.value = 'Bet placed successfully!'
+    snackbarColor.value = 'success'
   } else {
-    // error feedback
+    snackbarText.value = result?.message || 'Failed to place bet.'
+    snackbarColor.value = 'error'
   }
-    */
+  console.log("test")
+  snackbar.value = true
 }
 
 function formatDate(isoString) {
@@ -114,6 +120,11 @@ function formatDate(isoString) {
       Place {{ store.isParlay ? 'Parlay' : 'Bet' }}
     </v-btn>
   </v-navigation-drawer>
+
+  <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000" location="bottom right">
+    {{ snackbarText }}
+  </v-snackbar>
+
 </template>
 
 <style scoped>
