@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 import { jwtDecode } from 'jwt-decode'
+import apiClient from '../utils/api.js'
 
 
 export const useAuthStore = defineStore('auth', {

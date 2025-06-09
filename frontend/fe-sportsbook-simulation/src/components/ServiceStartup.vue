@@ -23,7 +23,7 @@ const estimatedTime = computed(() => {
 
 <template>
   <v-overlay
-    v-model="show"
+    :model-value="show"
     persistent
     class="d-flex align-center justify-center"
   >
@@ -45,7 +45,7 @@ const estimatedTime = computed(() => {
       </div>
 
       <v-card-title class="text-h6 mb-2">
-        🚀 Starting Services
+        Starting Services
       </v-card-title>
 
       <v-card-text>
