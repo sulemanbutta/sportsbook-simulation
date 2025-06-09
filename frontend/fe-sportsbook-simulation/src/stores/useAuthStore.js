@@ -7,6 +7,10 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: localStorage.getItem('token') || null,
     user: null,
+    isLoading: false,
+    isServiceStarting: false,
+    startupMessage: '',
+    retryAttempt: 0
   }),
 
   getters: {
@@ -38,31 +42,74 @@ export const useAuthStore = defineStore('auth', {
         }
       }
     },
+
     async login({ email, password }) {
       console.log(email, password)
-      const AUTH_API = import.meta.env.VITE_AUTH_API_URL;
-      console.log("AUTH_API: ", AUTH_API)
-      const res =  await axios.post(`${AUTH_API}/auth/login`, { email, password });
-      console.log('res:', res)
-      this.token = res.data.token
-      localStorage.setItem('token', this.token)
-      await this.fetchUser()
-    },
-    async signup({ username, email, password }) {
+      this.isLoading = true
+      this.isServiceStarting = false
+      this.retryAttempt = 0
+
       try {
         const AUTH_API = import.meta.env.VITE_AUTH_API_URL;
-        const res = await axios.post(`${AUTH_API}/auth/register`, {
-          username,
-          email,
-          password,
-        })
+        console.log("AUTH_API: ", AUTH_API)
+
+        const res = await apiClient.makeRequest(
+          () => axios.post(`${AUTH_API}/auth/login`, { email, password }),
+          {
+            onServiceStarting: (attempt, maxAttempts) => {
+              this.isServiceStarting = true
+              this.retryAttempt = attempt
+              this.startupMessage = `Starting auth service... (${attempt}/${maxAttempts})`
+            },
+            onRetry: (attempt, error) => {
+              console.log(`Retry attempt ${attempt}:`, error.message)
+            }
+          }
+        );
+
+        this.token = res.data.token
+        localStorage.setItem('token', this.token)
+        await this.fetchUser()
+      } catch (error) {
+        console.error('Login failed:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+        this.isServiceStarting = false
+        this.startupMessage = ''
+        this.retryAttempt = 0
+      }
+    },
+
+    async signup({ username, email, password }) {
+      this.isLoading = true
+      this.isServiceStarting = false
+
+      try {
+        const AUTH_API = import.meta.env.VITE_AUTH_API_URL;
+
+        const res = await apiClient.makeRequest(
+          () => axios.post(`${AUTH_API}/auth/register`, { username, email, password }),
+          {
+            onServiceStarting: (attempt, maxAttempts) => {
+              this.isServiceStarting = true
+              this.startupMessage = `Starting auth service... (${attempt}/${maxAttempts})`
+            }
+          }
+        );
         this.token = res.data.token
         localStorage.setItem('token', this.token)
         await this.fetchUser()
       } catch (error) {
         console.error('Failed to register user:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+        this.isServiceStarting = false
+        this.startupMessage = ''
       }
     },
+
     async fetchUser() {
       if (!this.token) return
       try {
@@ -80,6 +127,7 @@ export const useAuthStore = defineStore('auth', {
     },
     logout() {
       this.token = null
+      this.user = null
       localStorage.removeItem('token')
     },
   },

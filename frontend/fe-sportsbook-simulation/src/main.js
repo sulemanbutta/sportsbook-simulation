@@ -4,6 +4,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import './plugins/axios'
+import apiClient from './utils/api.js'
 import { createPinia } from 'pinia'
 import { useAuthStore } from './stores/useAuthStore'
 import { createVuetify } from 'vuetify'
@@ -26,5 +27,7 @@ app.use(vuetify)
 
 const auth = useAuthStore()
 auth.initializeAuth()
+
+apiClient.warmUpServices()
 
 app.mount('#app')
