@@ -44,10 +44,20 @@ async function startServer() {
     allowedHeaders: ['Content-Type','Authorization']
   }));
   
+  app.get('/warmup', (req, res) => {
+    res.json({ 
+      status: 'warm',
+      service: 'settlement-service',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime()
+    });
+  });
+
   // Health check - responds immediately
   app.get('/health', (req, res) => {
     const status = {
       status: 'healthy',
+      service: 'settlement-service',
       timestamp: new Date().toISOString(),
       database: dbReady ? 'ready' : 'initializing'
     };

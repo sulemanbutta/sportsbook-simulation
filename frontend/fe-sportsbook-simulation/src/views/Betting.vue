@@ -3,14 +3,20 @@ import LiveGameCard from '@/components/LiveGameCard.vue'
 import GameCard from '@/components/GameCard.vue'
 import CompletedGameCard from '@/components/CompletedGameCard.vue'
 import BetslipDrawer from '@/components/BetslipDrawer.vue'
+import ServiceStartup from '@/components/ServiceStartup.vue'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
+import apiClient from '@/utils/api.js'
 
 const loading = ref(true)
 const firstLoad = ref(true)
 const allGames = ref([])
-//let livePollInterval = null
 let fetchGamesInterval = null
+
+// Service startup state
+const isServiceStarting = ref(false)
+const startupMessage = ref('')
+const retryAttempt = ref(0)
 
 function getLogoPath(teamName) {
   const removedAccentsName = teamName.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -42,48 +48,7 @@ const fetchGames = async () => {
     firstLoad.value = false
   }
 }
-/*
-const countLive = ref(0)
-const pollLiveGames = async () => {
-  const now = new Date()
-  const currentTime = now.toLocaleTimeString('en-US', {
-    hour12: true,
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  })
-  countLive.value++
-  console.log('pollingLiveGames:', countLive.value, ' ', currentTime)
 
-  try {
-    const response = await axios.get('http://localhost:4001/betting/livegames')
-    const updatedLiveGames = response.data
-    console.log('updatedLiveGames')
-    // Replace matching live games in allGames
-    const liveIds = new Set(updatedLiveGames.map((g) => g.normalized_id))
-    allGames.value = allGames.value.map((game) => {
-      if (liveIds.has(game.normalized_id)) {
-        const updated = updatedLiveGames.find((g) => g.normalized_id === game.normalized_id)
-        if (updated) {
-          const re = {
-            ...game, // keep original game fields
-            score: updated.score ?? game.score,
-            odds: updated.odds ?? game.odds,
-            isLive: updated.isLive ?? game.isLive,
-            commence_time: updated.commence_time ?? game.commence_time,
-            completed: updated.completed ?? game.completed,
-          }
-          console.log('re:', re)
-          return re
-        }
-      }
-      return game
-    })
-  } catch (error) {
-    console.log('Live polling error:', error)
-  }
-}
-*/
 const liveGames = computed(() =>
   allGames.value
     .filter((game) => game.isLive && !game.completed)
@@ -110,14 +75,11 @@ const filteredCompletedGames = computed(() => filterByLeague(completedGames.valu
 
 const handleVisibilityChange = () => {
   if (document.hidden) {
-    //if (livePollInterval) clearInterval(livePollInterval)
     if (fetchGamesInterval) clearInterval(fetchGamesInterval)
     console.log('Tab hidden — polling paused.')
   } else {
     // Resume polling
-    //pollLiveGames()
     fetchGames()
-    //livePollInterval = setInterval(pollLiveGames, 30000)
     fetchGamesInterval = setInterval(fetchGames, 60000)
     console.log('Tab visible — polling resumed.')
   }
@@ -125,13 +87,11 @@ const handleVisibilityChange = () => {
 
 onMounted(() => {
   fetchGames()
-  //livePollInterval = setInterval(pollLiveGames, 30000) // every 30s
   fetchGamesInterval = setInterval(fetchGames, 60000) // every 1 minutes
   document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
 onUnmounted(() => {
-  //if (livePollInterval) clearInterval(livePollInterval)
   if (fetchGamesInterval) clearInterval(fetchGamesInterval)
   document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
@@ -140,11 +100,11 @@ onUnmounted(() => {
 <template>
   <div>
     <v-container>
-      <div v-if="loading" class="d-flex justify-center align-center" style="height: 80vh">
+      <div v-if="loading && !isServiceStarting" class="d-flex justify-center align-center" style="height: 80vh">
         <v-progress-circular indeterminate size="64" color="primary" />
       </div>
 
-      <div v-else>
+      <div v-else-if="!isServiceStarting">
         <!-- League Toolbar -->
         <v-toolbar flat density="comfortable" class="mb-6">
           <v-toolbar-title class="text-subtitle-1">Filter by League</v-toolbar-title>
@@ -245,5 +205,12 @@ onUnmounted(() => {
       </div>
     </v-container>
     <BetslipDrawer />
+
+    <!-- Service startup modal -->
+    <ServiceStartup
+      :show="isServiceStarting"
+      :attempt="retryAttempt"
+      :message="startupMessage"
+    />
   </div>
 </template>

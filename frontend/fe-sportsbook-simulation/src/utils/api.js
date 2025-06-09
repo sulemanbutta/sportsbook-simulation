@@ -43,9 +43,13 @@ class ApiClient {
   async warmUpServices() {
 
     const authApi = import.meta.env.VITE_AUTH_API_URL;
+    const bettingApi = import.meta.env.VITE_BETTING_API_URL;
+    const settlementApi = import.meta.env.VITE_SETTLEMENT_API_URL;
 
     const services = [
       `${authApi}/warmup`,
+      `${bettingApi}/warmup`,
+      `${settlementApi}/warmup`,
     ]
 
     console.log('Warming up services...');

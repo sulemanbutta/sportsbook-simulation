@@ -42,11 +42,21 @@ function startServer() {
     methods: ['GET','POST','PUT','DELETE'],
     allowedHeaders: ['Content-Type','Authorization']
   }));
-  
+
+  app.get('/warmup', (req, res) => {
+    res.json({ 
+      status: 'warm',
+      service: 'betting-service',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime()
+    });
+  });
+
   // Health check - responds immediately
   app.get('/health', (req, res) => {
     const status = {
       status: 'healthy',
+      service: 'betting-service',
       timestamp: new Date().toISOString(),
       database: dbReady ? 'ready' : 'initializing'
     };
