@@ -190,7 +190,6 @@ router.get("/livegames", async (req, res) => {
 });
 
 router.get("/games", async (req, res) => {
-    /*
     try {
           const nbaScores = await getAllScores({league:'nba'});
           const nhlScores = await getAllScores({league:'nhl'});
@@ -203,8 +202,6 @@ router.get("/games", async (req, res) => {
         console.error('Error fetching game data', error);
         res.status(500).json({ error: 'Failed to fetch game data' });
     }
-        */
-    res.status(503).json({ error: 'UNAVAILABLE' });
 });
 
 module.exports = router;
