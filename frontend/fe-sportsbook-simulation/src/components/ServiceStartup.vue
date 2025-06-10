@@ -26,6 +26,7 @@ const estimatedTime = computed(() => {
     :model-value="show"
     persistent
     class="d-flex align-center justify-center"
+    style="z-index: 9999;"
   >
     <v-card
       class="pa-6 text-center"
