@@ -27,6 +27,10 @@ function getLogoPath(teamName) {
 const countRefetch = ref(0)
 const fetchGamesInitial = async () => {
   if (firstLoad.value) loading.value = true
+
+  console.log('🔍 Starting fetchGamesInitial');
+  console.log('🔍 isServiceStarting before:', isServiceStarting.value);
+
   const now = new Date()
   const currentTime = now.toLocaleTimeString('en-US', {
     hour12: true,
@@ -39,28 +43,43 @@ const fetchGamesInitial = async () => {
 
   try {
     const BETTING_API = import.meta.env.VITE_BETTING_API_URL;
+    console.log('🔍 BETTING_API:', BETTING_API);
+
     const response = await apiClient.makeRequest(
-      () => axios.get(`${BETTING_API}/betting/games`),
+      () => {
+        console.log('🔍 Making axios request...');
+        return axios.get(`${BETTING_API}/betting/games`);
+      },
       {
         onServiceStarting: (attempt, maxAttempts) => {
+          console.log('🚀 onServiceStarting callback triggered!', { attempt, maxAttempts });
+          console.log('🔍 Setting isServiceStarting to true');
           isServiceStarting.value = true
           retryAttempt.value = attempt
           startupMessage.value = `Starting betting service... (${attempt}/${maxAttempts})`
+          console.log('🔍 isServiceStarting after setting:', isServiceStarting.value);
         },
         onRetry: (attempt, error) => {
-          console.log(`Betting service retry attempt ${attempt}:`, error.message)
+          console.log(`🔄 Betting service retry attempt ${attempt}:`, error.message)
         }
       }
     );
+
+    console.log('✅ Request successful, response:', response.status);
     allGames.value = response.data
   } catch (error) {
-    console.log('ERROR: ', error)
+    console.log('❌ ERROR in fetchGamesInitial:', error)
+    console.log('❌ Error status:', error.response?.status)
+    console.log('❌ Error message:', error.message)
   } finally {
+    console.log('🔍 In finally block');
+    console.log('🔍 isServiceStarting before reset:', isServiceStarting.value);
     loading.value = false
     firstLoad.value = false
     isServiceStarting.value = false
     startupMessage.value = ''
     retryAttempt.value = 0
+    console.log('🔍 isServiceStarting after reset:', isServiceStarting.value);
   }
 }
 
@@ -125,6 +144,20 @@ const handleVisibilityChange = () => {
   }
 }
 
+const testModal = () => {
+  console.log('🧪 Testing modal manually');
+  isServiceStarting.value = true;
+  retryAttempt.value = 2;
+  startupMessage.value = 'Testing startup modal...';
+
+  // Auto-hide after 5 seconds
+  setTimeout(() => {
+    isServiceStarting.value = false;
+    startupMessage.value = '';
+    retryAttempt.value = 0;
+  }, 5000);
+}
+
 onMounted(() => {
   fetchGamesInitial()
   fetchGamesInterval = setInterval(fetchGamesPolling, 60000) // every 1 minutes
@@ -140,6 +173,18 @@ onUnmounted(() => {
 <template>
   <div>
     <v-container>
+ <!-- Add this test button -->
+      <v-row class="mb-4">
+        <v-col>
+          <v-btn @click="testModal" color="warning">
+            Test Modal
+          </v-btn>
+          <v-btn @click="fetchGamesInitial" :loading="loading" color="primary" class="ml-2">
+            Refresh Games
+          </v-btn>
+        </v-col>
+      </v-row>
+
       <div v-if="loading && !isServiceStarting" class="d-flex justify-center align-center" style="height: 80vh">
         <v-progress-circular indeterminate size="64" color="primary" />
       </div>
