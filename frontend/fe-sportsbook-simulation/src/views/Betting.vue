@@ -25,7 +25,7 @@ function getLogoPath(teamName) {
 }
 
 const countRefetch = ref(0)
-const fetchGames = async () => {
+const fetchGamesInitial = async () => {
   if (firstLoad.value) loading.value = true
   const now = new Date()
   const currentTime = now.toLocaleTimeString('en-US', {
@@ -64,6 +64,31 @@ const fetchGames = async () => {
   }
 }
 
+// Background polling (silent, no modal)
+const fetchGamesPolling = async () => {
+  const now = new Date()
+  const currentTime = now.toLocaleTimeString('en-US', {
+    hour12: true,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+  countRefetch.value++
+  console.log('Background poll - pollingAllGames:', countRefetch.value, ' ', currentTime)
+
+  try {
+    const BETTING_API = import.meta.env.VITE_BETTING_API_URL;
+    // Simple request with no retry logic for background polling
+    const response = await axios.get(`${BETTING_API}/betting/games`, {
+      timeout: 10000 // 10 second timeout
+    });
+    allGames.value = response.data
+  } catch (error) {
+    console.log('Background polling error (silent):', error.message)
+    // Don't show modal for background polling failures
+  }
+}
+
 const liveGames = computed(() =>
   allGames.value
     .filter((game) => game.isLive && !game.completed)
@@ -94,15 +119,15 @@ const handleVisibilityChange = () => {
     console.log('Tab hidden — polling paused.')
   } else {
     // Resume polling
-    fetchGames()
-    fetchGamesInterval = setInterval(fetchGames, 60000)
+    fetchGamesInitial()
+    fetchGamesInterval = setInterval(fetchGamesPolling, 60000)
     console.log('Tab visible — polling resumed.')
   }
 }
 
 onMounted(() => {
-  fetchGames()
-  fetchGamesInterval = setInterval(fetchGames, 60000) // every 1 minutes
+  fetchGamesInitial()
+  fetchGamesInterval = setInterval(fetchGamesPolling, 60000) // every 1 minutes
   document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
