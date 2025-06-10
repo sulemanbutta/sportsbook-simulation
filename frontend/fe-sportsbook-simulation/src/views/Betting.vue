@@ -42,7 +42,7 @@ const fetchGames = async () => {
     const response = await apiClient.makeRequest(
       () => axios.get(`${BETTING_API}/betting/games`),
       {
-        onServicesStarting: (attempt, maxAttempts) => {
+        onServiceStarting: (attempt, maxAttempts) => {
           isServiceStarting.value = true
           retryAttempt.value = attempt
           startupMessage.value = `Starting betting service... (${attempt}/${maxAttempts})`

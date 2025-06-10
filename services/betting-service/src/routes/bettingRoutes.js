@@ -16,7 +16,7 @@ const { generateNormalizedGameId } = require('../utils/generateNormalizedGameId'
 const { mergeScoresAndOdds } = require('../utils/mergeScoresAndOdds');
 
 const router = express.Router();
-
+console.log('force revision betting-service')
 const authenticate = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     console.log("Authorization Header:", authHeader)
