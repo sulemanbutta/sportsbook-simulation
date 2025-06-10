@@ -147,15 +147,6 @@ onUnmounted(() => {
 
       <!-- Show content when not loading OR when service is starting (so user can see content behind modal) -->
       <div v-else-if="!loading || isServiceStarting">
-        <!-- Add refresh button for testing -->
-        <v-row class="mb-4">
-          <v-col>
-            <v-btn @click="fetchGamesInitial" :loading="loading" color="primary">
-              <v-icon start>mdi-refresh</v-icon>
-              Refresh Games
-            </v-btn>
-          </v-col>
-        </v-row>
         <!-- League Toolbar -->
         <v-toolbar flat density="comfortable" class="mb-6">
           <v-toolbar-title class="text-subtitle-1">Filter by League</v-toolbar-title>
