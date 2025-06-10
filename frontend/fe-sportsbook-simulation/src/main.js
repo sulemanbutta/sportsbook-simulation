@@ -28,6 +28,6 @@ app.use(vuetify)
 const auth = useAuthStore()
 auth.initializeAuth()
 
-apiClient.warmUpServices()
+//apiClient.warmUpServices()
 
 app.mount('#app')
