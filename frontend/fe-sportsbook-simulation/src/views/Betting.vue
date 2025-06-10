@@ -119,7 +119,7 @@ const handleVisibilityChange = () => {
     console.log('Tab hidden — polling paused.')
   } else {
     // Resume polling
-    fetchGamesInitial()
+    fetchGamesPolling()
     fetchGamesInterval = setInterval(fetchGamesPolling, 60000)
     console.log('Tab visible — polling resumed.')
   }

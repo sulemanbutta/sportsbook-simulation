@@ -3,7 +3,7 @@ import axios from 'axios';
 class ApiClient {
   constructor() {
     this.maxRetries = 3;
-    this.servicesStartupDelay = 3000;
+    this.serviceStartupDelay = 3000;
   }
 
   async makeRequest(requestFn, options = {}) {
@@ -18,9 +18,9 @@ class ApiClient {
         return response;
       } catch (error) {
         const isServiceStarting = error.response?.status === 503;
-        const isLastAtttempt = attempt == this.manRetries;
+        const isLastAttempt = attempt == this.maxRetries;
 
-        if (isServiceStarting && !isLastAtttempt) {
+        if (isServiceStarting && !isLastAttempt) {
           if (onServiceStarting) {
             onServiceStarting(attempt, this.maxRetries);
           }
@@ -31,7 +31,7 @@ class ApiClient {
             onRetry(attempt, error);
           }
 
-          await new Promise(resolve => setTimeout(resolve, this.servicesStartupDelay));
+          await new Promise(resolve => setTimeout(resolve, this.serviceStartupDelay));
           continue;
         }
 
