@@ -47,9 +47,9 @@ class ApiClient {
     const settlementApi = import.meta.env.VITE_SETTLEMENT_API_URL;
 
     const services = [
-      //`${authApi}/warmup`,
+      `${authApi}/warmup`,
       `${bettingApi}/warmup`,
-      //`${settlementApi}/warmup`,
+      `${settlementApi}/warmup`,
     ]
 
     console.log('Warming up services...');

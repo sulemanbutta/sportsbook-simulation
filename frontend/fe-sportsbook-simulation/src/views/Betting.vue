@@ -39,13 +39,28 @@ const fetchGames = async () => {
 
   try {
     const BETTING_API = import.meta.env.VITE_BETTING_API_URL;
-    const response = await axios.get(`${BETTING_API}/betting/games`)
+    const response = await apiClient.makeRequest(
+      () => axios.get(`${BETTING_API}/betting/games`),
+      {
+        onServicesStarting: (attempt, maxAttempts) => {
+          isServiceStarting.value = true
+          retryAttempt.value = attempt
+          startupMessage.value = `Starting betting service... (${attempt}/${maxAttempts})`
+        },
+        onRetry: (attempt, error) => {
+          console.log(`Betting service retry attempt ${attempt}:`, error.message)
+        }
+      }
+    );
     allGames.value = response.data
   } catch (error) {
     console.log('ERROR: ', error)
   } finally {
     loading.value = false
     firstLoad.value = false
+    isServiceStarting.value = false
+    startupMessage.value = ''
+    retryAttempt.value = 0
   }
 }
 
