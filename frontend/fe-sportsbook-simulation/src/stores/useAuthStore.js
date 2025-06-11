@@ -93,17 +93,24 @@ export const useAuthStore = defineStore('auth', {
           () => axios.post(`${AUTH_API}/auth/register`, { username, email, password }),
           {
             onServiceStarting: (attempt, maxAttempts) => {
-              this.isServiceStarting = true
+              this.isServiceStarting = true;
               this.startupMessage = `Starting auth service... (${attempt}/${maxAttempts})`
             }
           }
         );
-        this.token = res.data.token
-        localStorage.setItem('token', this.token)
-        await this.fetchUser()
+
+        this.token = res.data.token;
+        localStorage.setItem('token', this.token);
+        await this.fetchUser();
+
       } catch (error) {
-        console.error('Failed to register user:', error)
-        throw error
+          console.error('Registration failed:', error);
+
+          // Handle validation errors specifically
+          if (error.response?.data?.errors) {
+            throw new Error(error.response.data.errors.join('\n'));
+          }
+          throw error;
       } finally {
         this.isLoading = false
         this.isServiceStarting = false
