@@ -14,5 +14,27 @@ router.get("/unsettled-bets", async (req, res) => {
     }
   });
 
+// Scheduled endpoint (called by Cloud Scheduler)
+router.post('/unsettled-bets/scheduled', async (req, res) => {
+  // Verify the request is from Cloud Scheduler
+  const authHeader = req.headers.authorization;
+  if (!authHeader || authHeader !== `Bearer ${process.env.SCHEDULER_SECRET}`) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
-module.exports = router
+ try {
+  await gradeUnsettledBetsAndParlayLegs(req.db);
+  res.json({ 
+      message: "Scheduled settlement completed successfully",
+      timestamp: new Date().toISOString()
+  });
+  } catch (error) {
+    console.log("Scheduled settlement error:", error);
+    res.status(500).json({ 
+        error: "Scheduled settlement failed",
+        timestamp: new Date().toISOString()
+    });
+  }
+});
+
+module.exports = router;
