@@ -16,18 +16,25 @@ router.get("/unsettled-bets", async (req, res) => {
 
 // Scheduled endpoint (called by Cloud Scheduler)
 router.post('/unsettled-bets/scheduled', async (req, res) => {
+  // DEBUG: Log what we're receiving
+  console.log('Auth header received:', req.headers.authorization);
+  console.log('Expected token:', process.env.SCHEDULER_SECRET);
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
+  
   // Verify the request is from Cloud Scheduler
   const authHeader = req.headers.authorization;
   if (!authHeader || authHeader !== `Bearer ${process.env.SCHEDULER_SECRET}`) {
+    console.log('Auth failed - header:', authHeader);
+    console.log('Expected:', `Bearer ${process.env.SCHEDULER_SECRET}`);
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
- try {
-  await gradeUnsettledBetsAndParlayLegs(req.db);
-  res.json({ 
-      message: "Scheduled settlement completed successfully",
-      timestamp: new Date().toISOString()
-  });
+  try {
+    await gradeUnsettledBetsAndParlayLegs(req.db);
+    res.json({ 
+        message: "Scheduled settlement completed successfully",
+        timestamp: new Date().toISOString()
+    });
   } catch (error) {
     console.log("Scheduled settlement error:", error);
     res.status(500).json({ 
