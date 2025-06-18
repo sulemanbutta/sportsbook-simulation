@@ -27,9 +27,9 @@ const groupEventsBySport = (items) => {
 }
 
 const fetchScoresBySport = async (groupedEvents) => {
+    console.log("In fetchScoresBySport()")
     const scorePromises = Object.entries(groupedEvents).map(async ([sport, eventSet]) => {
         const eventIds = Array.from(eventSet).join(',');
-        console.log("In fetchScoresBySport()")
         console.log("sport:", sport)
         console.log("eventIds:", eventIds)
         try {
@@ -61,6 +61,7 @@ const fetchScoresBySport = async (groupedEvents) => {
 }
 
 const gradeWager = (wager, scoreData) => {
+    console.log("in gradeWager()")
     if (!scoreData || !scoreData.scores || !scoreData.completed) {
         return { status: "PENDING"};
     }
@@ -81,10 +82,12 @@ const gradeWager = (wager, scoreData) => {
 };
 
 async function gradeUnsettledBetsAndParlayLegs(db) {
+    console.log("in gradeUnsettledBetsAndParlayLegs()")
     try {
         const { User, Bet, ParlayLeg, Parlay, sequelize } = db
         const unsettledBets =  await getUnsettledBets(db);
         const unsettledLegs = await getUnsettledParlayLegs(db);
+        console.log("unsettledBets:", unsettledBets)
         console.log("unsettledLegs:", unsettledLegs)
         const parlayIds = [...new Set(unsettledLegs.map(leg => leg.parlay_id))];
         console.log("parlayIds:", parlayIds)

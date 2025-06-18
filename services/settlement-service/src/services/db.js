@@ -30,10 +30,16 @@ async function initializeDatabase() {
         }
       },
       pool: {
-        max: 5,
-        min: 1,
-        acquire: 30000,
-        idle: 300000,
+        max: 10,        // Increase max connections (was 5)
+        min: 2,         // Keep some connections ready (was 1)
+        acquire: 120000, // 2 minutes instead of 30 seconds
+        idle: 60000,    // Shorter idle time (was 5 minutes)
+        evict: 30000,   // Check for idle connections more frequently
+      },
+      retry: {
+        max: 3,
+        backoffBase: 1000,
+        backoffExponent: 1.1,
       }
     });
     

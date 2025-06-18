@@ -16,11 +16,6 @@ router.get("/unsettled-bets", async (req, res) => {
 
 // Scheduled endpoint (called by Cloud Scheduler)
 router.post('/unsettled-bets/scheduled', async (req, res) => {
-  // DEBUG: Log what we're receiving
-  console.log("test")
-  console.log('Auth header received:', req.headers.authorization);
-  console.log('Expected token:', process.env.SCHEDULER_SECRET);
-  console.log('Headers:', JSON.stringify(req.headers, null, 2));
   
   // Verify the request is from Cloud Scheduler
   const authHeader = req.headers.authorization;
