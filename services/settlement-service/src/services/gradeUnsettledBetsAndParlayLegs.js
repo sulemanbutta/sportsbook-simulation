@@ -148,7 +148,7 @@ async function gradeUnsettledBetsAndParlayLegs(db) {
                 if (parlayStatus === 'WIN') {
                     const parlay = await Parlay.findOne({ where: { parlay_id: parlayId }, transaction })
                     const user = await User.findOne({ where: { user_id: parlay.user_id }, transaction });
-                    const newBalance = user.balance + bet.payout
+                    const newBalance = user.balance + parlay.payout
                     await user.update({ balance: newBalance }, { transaction });
                 }
             }
