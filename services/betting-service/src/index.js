@@ -32,8 +32,14 @@ function startServer() {
   
   // Set up Express app immediately
   const app = express();
-  const allowed = [ 'https://sportsbook-simulation.web.app', 'https://sportsbook-simulation.firebaseapp.com', 'http://localhost:5173'];
-
+  const allowed = [ 
+    'https://sportsbook-simulation.web.app', 
+    'https://sportsbook-simulation.firebaseapp.com', 
+    'http://localhost:5173',
+    'https://sportsbooksim.app',
+    'https://api.sportsbooksim.app', 
+    'https://auth.sportsbooksim.app'
+  ];
   
   // Middleware
   app.use(express.json());
